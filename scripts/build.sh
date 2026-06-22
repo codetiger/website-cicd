@@ -7,7 +7,7 @@
 #   /          home/                  this repo (plain static HTML)
 #   /blog/     projects/blog          Astro, base "/blog"
 #   /avarta/   projects/avarta        Rust+wasm -> Vite, relative base "./"
-#   /resume/   projects/resume        Python/Jinja2 -> self-contained public/index.html
+#   /resume/   projects/resume        Three.js + Vite game (base "/resume/") + Python/Jinja2 static fallback
 #
 # Requires on PATH: node + npm, python3, rust + wasm-pack (for Avarta's wasm).
 set -euo pipefail
@@ -55,13 +55,17 @@ echo "==> avarta (Rust wasm + Vite) -> /avarta/"
 mkdir -p "$DIST/avarta"
 cp -R "$ROOT/projects/avarta/web/dist/." "$DIST/avarta/"
 
-echo "==> resume (Python static) -> /resume/"
+echo "==> resume (Three.js game + Python static fallback, Vite) -> /resume/"
 (
   cd "$ROOT/projects/resume"
   python3 -m pip install --quiet -r requirements.txt
-  python3 build.py
+  npm ci
+  # build:site = `python3 build.py` (renders the static resume.html fallback) then
+  # `vite build` (the Three.js game). Vite base is '/resume/' and publicDir is
+  # 'assets', so the output lands in dist/ ready to serve at /resume/.
+  npm run build:site
 )
 mkdir -p "$DIST/resume"
-cp -R "$ROOT/projects/resume/public/." "$DIST/resume/"
+cp -R "$ROOT/projects/resume/dist/." "$DIST/resume/"
 
 echo "==> Done. Combined site is in $DIST"
