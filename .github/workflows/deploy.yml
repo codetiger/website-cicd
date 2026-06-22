@@ -52,6 +52,16 @@ jobs:
       - name: Build combined site
         run: ./scripts/build.sh
 
+      # Bootstrap: create the Direct Upload Pages project on first deploy, then
+      # no-op on every run after (idempotent). Avoids a manual one-time setup step.
+      - name: Ensure Pages project exists
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler@4 pages project list | grep -q "codetiger-website" \
+            || npx --yes wrangler@4 pages project create codetiger-website --production-branch main
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
