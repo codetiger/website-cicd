@@ -1,0 +1,17 @@
+# Build output
+dist/
+
+# Dependencies
+node_modules/
+
+# Cloudflare Wrangler (local cache/state + local secrets)
+.wrangler/
+.dev.vars
+.dev.vars.*
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store

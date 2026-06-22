@@ -1,0 +1,61 @@
+name: Build & Deploy to Cloudflare Pages
+
+# Deploys ONLY on a push to this repo's main branch or a manual run. Pushes to
+# the sub-project repos do not trigger a deploy — to publish updated sub-project
+# content, bump its submodule pointer here and push (see README).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Latest commit wins; cancel an in-progress deploy if a newer one starts.
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # Load the read-only SSH deploy keys BEFORE checkout so the SSH submodule
+      # URLs in .gitmodules can be fetched. One key per submodule repo, all
+      # concatenated into the SSH_SUBMODULE_KEYS secret.
+      - name: Load submodule SSH deploy keys
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_SUBMODULE_KEYS }}
+
+      - name: Checkout (recursive submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Rust (wasm target)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.4.0
+
+      - name: Build combined site
+        run: ./scripts/build.sh
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # project-name must match the Pages project created in Cloudflare.
+          command: pages deploy dist --project-name=codetiger-website --branch=main

@@ -1,0 +1,12 @@
+[submodule "projects/blog"]
+	path = projects/blog
+	url = git@github.com:codetiger/blog.git
+	branch = main
+[submodule "projects/avarta"]
+	path = projects/avarta
+	url = git@github.com:codetiger/Avarta.git
+	branch = main
+[submodule "projects/resume"]
+	path = projects/resume
+	url = git@github.com:codetiger/resume.git
+	branch = master

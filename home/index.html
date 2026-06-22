@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Harishankar Narayanan — codetiger</title>
+    <meta
+      name="description"
+      content="Personal site of Harishankar Narayanan (codetiger): blog, projects, and résumé."
+    />
+    <style>
+      :root {
+        --bg: #0d1117;
+        --fg: #e6edf3;
+        --muted: #8b949e;
+        --accent: #58a6ff;
+        --card: #161b22;
+        --border: #30363d;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+      }
+      .brand {
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+      nav {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+      nav a,
+      .dropdown > button {
+        color: var(--fg);
+        text-decoration: none;
+        padding: 0.4rem 0.6rem;
+        border-radius: 6px;
+        font: inherit;
+      }
+      nav a:hover,
+      .dropdown > button:hover,
+      .dropdown[data-open="true"] > button {
+        background: var(--card);
+        color: var(--accent);
+      }
+      .dropdown {
+        position: relative;
+      }
+      .dropdown > button {
+        background: none;
+        border: none;
+        cursor: pointer;
+      }
+      .menu {
+        position: absolute;
+        right: 0;
+        top: 100%;
+        margin-top: 0.4rem;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        min-width: 240px;
+        padding: 0.4rem;
+        display: none;
+        z-index: 10;
+      }
+      .menu.open {
+        display: block;
+      }
+      .menu a {
+        display: block;
+        padding: 0.5rem 0.6rem;
+        border-radius: 6px;
+      }
+      .menu a:hover {
+        background: var(--bg);
+      }
+      .menu a small {
+        display: block;
+        color: var(--muted);
+        font-size: 0.78rem;
+        margin-top: 0.15rem;
+      }
+      .menu a.soon {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+      main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem 1.5rem;
+      }
+      h1 {
+        font-size: clamp(2rem, 6vw, 3.5rem);
+        margin: 0 0 0.5rem;
+        letter-spacing: -0.03em;
+      }
+      .tagline {
+        color: var(--muted);
+        font-size: 1.15rem;
+        max-width: 44ch;
+        margin: 0 auto 2.5rem;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 1rem;
+        max-width: 760px;
+        width: 100%;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.2rem;
+        text-align: left;
+        text-decoration: none;
+        color: var(--fg);
+        transition: border-color 0.15s;
+      }
+      .card:hover {
+        border-color: var(--accent);
+      }
+      .card h3 {
+        margin: 0 0 0.35rem;
+      }
+      .card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+      footer {
+        text-align: center;
+        padding: 1.5rem;
+        color: var(--muted);
+        font-size: 0.85rem;
+        border-top: 1px solid var(--border);
+      }
+      footer a {
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand">codetiger</div>
+      <nav>
+        <a href="/blog/">Blog</a>
+        <div class="dropdown" id="projects">
+          <button aria-haspopup="true" aria-expanded="false">Projects ▾</button>
+          <div class="menu">
+            <a href="/avarta/">Avarta<small>Generative seashells — Rust+WASM, real-time path tracing</small></a>
+            <a href="/resume/">Résumé<small>Experience &amp; background</small></a>
+            <!-- Vishwakarma is excluded from the deploy until its tile pyramid is hosted on R2. -->
+            <a class="soon">Vishwakarma<small>Voxel terrain viewer — coming soon</small></a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <h1>Harishankar Narayanan</h1>
+      <p class="tagline">
+        Engineering leader by trade — graphics, simulation, and generative experiments by curiosity.
+      </p>
+      <div class="cards">
+        <a class="card" href="/blog/">
+          <h3>Blog →</h3>
+          <p>Notes on graphics, code, and side projects.</p>
+        </a>
+        <a class="card" href="/avarta/">
+          <h3>Avarta →</h3>
+          <p>3D seashells grown from a handful of numbers — a Rust+WASM core, path-traced in the browser.</p>
+        </a>
+        <a class="card" href="/resume/">
+          <h3>Résumé →</h3>
+          <p>20+ years building scalable, low-latency distributed systems.</p>
+        </a>
+      </div>
+    </main>
+
+    <footer>
+      © <span id="y"></span> Harishankar Narayanan ·
+      <a href="https://github.com/codetiger">GitHub</a> ·
+      <a href="https://linkedin.com/in/code42tiger/">LinkedIn</a>
+    </footer>
+
+    <script>
+      // Projects dropdown: click to toggle, click-away / Escape to close.
+      // (This page is plain static HTML with no build step.)
+      const dd = document.getElementById('projects');
+      const btn = dd.querySelector('button');
+      const menu = dd.querySelector('.menu');
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = menu.classList.toggle('open');
+        dd.dataset.open = String(open);
+        btn.setAttribute('aria-expanded', String(open));
+      });
+      document.addEventListener('click', () => {
+        menu.classList.remove('open');
+        dd.dataset.open = 'false';
+        btn.setAttribute('aria-expanded', 'false');
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          menu.classList.remove('open');
+          dd.dataset.open = 'false';
+          btn.setAttribute('aria-expanded', 'false');
+        }
+      });
+      document.getElementById('y').textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>

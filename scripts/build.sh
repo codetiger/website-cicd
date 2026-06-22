@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Build the combined personal website into ./dist.
+#
+# Each sub-project is a git submodule under projects/ and is built with its own
+# toolchain, then its output is copied under a flat top-level path:
+#
+#   /          home/                  this repo (plain static HTML)
+#   /blog/     projects/blog          Astro, base "/blog"
+#   /avarta/   projects/avarta        Rust+wasm -> Vite, relative base "./"
+#   /resume/   projects/resume        Python/Jinja2 -> self-contained public/index.html
+#
+# Requires on PATH: node + npm, python3, rust + wasm-pack (for Avarta's wasm).
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DIST="$ROOT/dist"
+cd "$ROOT"
+
+# Ensure submodules are checked out. No-op in CI (actions/checkout already did
+# it) and skipped when they're present, so a deliberately-modified submodule
+# working tree is never clobbered.
+if [ ! -f projects/blog/package.json ] \
+  || [ ! -f projects/avarta/web/package.json ] \
+  || [ ! -f projects/resume/build.py ]; then
+  echo "==> Initializing submodules"
+  git submodule update --init --recursive
+fi
+
+echo "==> Cleaning $DIST"
+rm -rf "$DIST"
+mkdir -p "$DIST"
+
+echo "==> Home page -> /"
+cp -R "$ROOT/home/." "$DIST/"
+
+echo "==> blog (Astro) -> /blog/"
+(
+  cd "$ROOT/projects/blog"
+  npm ci
+  npm run build
+)
+mkdir -p "$DIST/blog"
+cp -R "$ROOT/projects/blog/dist/." "$DIST/blog/"
+
+echo "==> avarta (Rust wasm + Vite) -> /avarta/"
+(
+  cd "$ROOT/projects/avarta"
+  # --out-dir is relative to the crate dir (crates/avarta-wasm), so this lands in
+  # web/pkg, exactly as Avarta's own deploy workflow does it.
+  wasm-pack build crates/avarta-wasm --target web --release --out-dir ../../web/pkg
+  cd web
+  npm ci
+  npm run build
+)
+mkdir -p "$DIST/avarta"
+cp -R "$ROOT/projects/avarta/web/dist/." "$DIST/avarta/"
+
+echo "==> resume (Python static) -> /resume/"
+(
+  cd "$ROOT/projects/resume"
+  python3 -m pip install --quiet -r requirements.txt
+  python3 build.py
+)
+mkdir -p "$DIST/resume"
+cp -R "$ROOT/projects/resume/public/." "$DIST/resume/"
+
+echo "==> Done. Combined site is in $DIST"
