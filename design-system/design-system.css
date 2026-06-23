@@ -1,0 +1,814 @@
+/* =============================================================================
+   codetiger design system — design-system.css
+   Reset + base element styles + every component as a reusable class, on the
+   deep-navy cinematic console identity. One <link> to this file is enough:
+
+     <link rel="stylesheet" href="/design-system/design-system.css">
+     (remember the Google Fonts <link> — see tokens.css header)
+
+   Every value below references a token from tokens.css — never hard-code a
+   colour/size here. Components are plain classes (no framework, no build).
+
+   CASCADE LAYERS — the whole sheet lives in @layer (order below). Because layered
+   styles always lose to UN-layered styles, a project that adopts this system can
+   override any component with its own plain CSS — no specificity war, no
+   !important. The override contract is explicit: your unlayered rules win.
+   ========================================================================== */
+@layer reset, base, tokens, components, utilities, a11y;
+@import "./tokens.css" layer(tokens);
+
+/* =============================================================================
+   1. RESET
+   ========================================================================== */
+@layer reset {
+  *,
+  *::before,
+  *::after { box-sizing: border-box; }
+
+  html, body, h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd, ul, ol {
+    margin: 0;
+  }
+
+  html { -webkit-text-size-adjust: 100%; font-size: 16px; }
+
+  body {
+    min-height: 100vh;
+    background: var(--color-bg);
+    color: var(--color-fg-secondary);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  img, picture, svg, canvas, video { display: block; max-width: 100%; }
+  input, button, textarea, select { font: inherit; color: inherit; }
+  ul[class], ol[class] { list-style: none; padding: 0; }
+
+  ::selection { background: var(--color-accent-soft); }
+
+  /* Focus uses outline (NOT a box-shadow ring) so it is never clipped by an
+     ancestor's overflow:hidden. The 2px offset reads as a gap-then-cyan ring. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* =============================================================================
+   2. BASE ELEMENTS
+   ========================================================================== */
+@layer base {
+  h1, h2, h3, h4 {
+    color: var(--color-fg);
+    font-weight: var(--weight-heading);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-heading);
+  }
+  h1 { font-size: var(--text-h1); }
+  h2 { font-size: var(--text-h2); }
+  h3 { font-size: var(--text-h3); }
+  h4 { font-size: var(--text-lg); }
+
+  a {
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color var(--dur-fast) var(--ease-standard);
+  }
+  a:hover { color: var(--color-accent-hover); }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    margin: var(--space-11) 0;
+  }
+}
+
+/* =============================================================================
+   3. LAYOUT HELPERS + SIGNATURE BACKDROP
+   ========================================================================== */
+@layer utilities {
+  .ds-container { width: 100%; max-width: 1100px; margin-inline: auto; padding-inline: var(--space-7); }
+  .stack > * + * { margin-top: var(--space-5); }
+  .cluster { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+
+  /* Opt-in cinematic backdrop: radial cyan + gold glows over a faint cyan grid.
+     Apply to <body> or a full-bleed wrapper. Drops to flat in light/print mode
+     (its colour tokens go transparent there). */
+  .brand-backdrop {
+    background-color: var(--color-bg);
+    background-image:
+      radial-gradient(900px 600px at 78% -8%, var(--backdrop-glow-cyan), transparent 60%),
+      radial-gradient(800px 520px at 8% 12%, var(--backdrop-glow-gold), transparent 55%),
+      linear-gradient(var(--backdrop-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--backdrop-grid) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, var(--backdrop-grid-size) var(--backdrop-grid-size), var(--backdrop-grid-size) var(--backdrop-grid-size);
+    background-attachment: fixed;
+  }
+
+  /* Mono uppercase section label — the résumé `.st`. */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    font-weight: var(--weight-medium);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-caps-wide);
+    color: var(--color-accent);
+  }
+}
+
+@layer components {
+  /* ===========================================================================
+     4. NAV BAR / HEADER
+     ========================================================================= */
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5);
+    padding: var(--space-5) var(--space-7);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .brand {
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-snug);
+    color: var(--color-fg);
+  }
+  .brand:hover { color: var(--color-accent); }
+
+  .nav {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+
+    & a,
+    & button {
+      color: var(--color-fg-secondary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      transition: background var(--dur-fast) var(--ease-standard),
+                  color var(--dur-fast) var(--ease-standard);
+    }
+    & a[aria-current="page"] { box-shadow: inset 0 -2px 0 var(--color-accent-border); }
+  }
+  .nav a:hover,
+  .nav button:hover,
+  .nav a[aria-current="page"],
+  .dropdown[data-open="true"] > button {
+    background: var(--color-bg-elevated);
+    color: var(--color-accent);
+  }
+
+  /* Floating, frosted titlebar over a live canvas (viewers / game). */
+  .site-header--float {
+    position: sticky;
+    top: 0;
+    background: var(--hud-panel);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--hud-line);
+    z-index: var(--z-hud);
+  }
+
+  /* ===========================================================================
+     5. DROPDOWN MENU
+     ========================================================================= */
+  .dropdown { position: relative; }
+  .menu {
+    position: absolute;
+    top: 100%;
+    inset-inline-end: 0;
+    margin-top: var(--space-2);
+    min-width: 240px;
+    padding: var(--space-2);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    z-index: var(--z-raised);
+    display: none;
+  }
+  .menu.open { display: block; }
+  .menu a {
+    display: block;
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    color: var(--color-fg-secondary);
+  }
+  .menu a:hover { background: var(--color-surface-2); color: var(--color-accent); }
+  .menu a small {
+    display: block;
+    margin-top: 0.15rem;
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+  }
+  .menu a.soon,
+  [disabled].menu-item { opacity: 0.5; pointer-events: none; }
+
+  /* ===========================================================================
+     6. BUTTONS — modifiers stay top-level (specificity-neutral); only STATES
+        nest, so adopters who copy this pattern don't inflate specificity.
+     ========================================================================= */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-sans);
+    font-size: var(--text-base-ui);
+    font-weight: var(--weight-semibold);
+    line-height: 1;
+    padding: var(--space-3) 0.9rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background var(--dur-fast) var(--ease-standard),
+                border-color var(--dur-fast) var(--ease-standard),
+                color var(--dur-fast) var(--ease-standard),
+                box-shadow var(--dur-fast) var(--ease-standard),
+                transform var(--dur-fast) var(--ease-standard);
+
+    &:active { transform: translateY(0.5px); }
+    &[disabled],
+    &.is-disabled { opacity: 0.5; pointer-events: none; }
+  }
+
+  .btn--primary {
+    background: var(--color-accent);
+    color: var(--color-bg);
+    &:hover { background: var(--color-accent-hover); color: var(--color-bg); }
+  }
+
+  .btn--secondary {
+    background: var(--color-bg-elevated);
+    color: var(--color-fg);
+    border-color: var(--color-border);
+    &:hover { border-color: var(--color-border-strong); color: var(--color-fg); }
+    &.is-active { border-color: var(--color-accent); color: var(--color-accent); }
+  }
+
+  .btn--ghost {
+    background: none;
+    color: var(--color-fg-secondary);
+    &:hover { background: var(--color-bg-elevated); color: var(--color-accent); }
+  }
+
+  .btn--danger {
+    background: var(--color-bg-elevated);
+    color: var(--color-danger);
+    border-color: var(--color-danger);
+    &:hover { background: var(--color-danger-soft); }
+  }
+
+  /* Cinematic filled CTA with a cyan glow. The brand cyan is fixed (not theme-
+     flipped) here, as before. Hover intensifies the halo by transitioning the
+     box-shadow between two themed glow tokens (both `none` in ink/print) — a clean
+     replacement for the old filter:brightness() hack. The base .btn already lists
+     box-shadow in its transition. */
+  .btn--glow {
+    color: var(--color-bg);
+    background: linear-gradient(oklch(85.54% 0.0923 227.66 / 0.95), oklch(85.54% 0.0923 227.66 / 0.72));
+    box-shadow: var(--glow-accent);
+    &:hover { color: var(--color-bg); box-shadow: var(--glow-accent-strong); }
+  }
+
+  /* ===========================================================================
+     8. CARDS
+     ========================================================================= */
+  .card {
+    display: block;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    color: var(--color-fg-secondary);
+    text-align: start;
+    text-decoration: none;
+    transition: border-color var(--dur-fast) var(--ease-standard),
+                box-shadow var(--dur-fast) var(--ease-standard);
+
+    & h3 { margin: 0 0 0.35rem; color: var(--color-fg); }
+    & p { margin: 0; color: var(--color-muted); font-size: var(--text-base-ui); line-height: var(--leading-relaxed); }
+  }
+  /* Kept top-level: the `a` type prefix would change specificity if nested. */
+  a.card:hover,
+  .card.is-interactive:hover { border-color: var(--color-accent-border); box-shadow: var(--glow-accent); }
+  .card.is-current { border-color: var(--color-accent); background: var(--color-accent-soft); }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--space-5);
+  }
+
+  /* List-row card variant (blog post list): hairline below, not a full box. */
+  .card-row {
+    border: none;
+    border-bottom: 1px solid var(--color-border);
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    padding: 0 0 var(--space-9);
+  }
+  .card-row h3 { transition: color var(--dur-fast) var(--ease-standard); }
+  .card-row:hover { box-shadow: none; }
+  .card-row:hover h3 { color: var(--color-accent); }
+
+  /* Frosted HUD panel — a Card with frosted fill, cyan border + real shadow. */
+  .hud-panel {
+    background: var(--hud-panel);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--hud-line);
+    border-radius: var(--radius-3xl);
+    padding: 1.1rem 1.25rem;
+    box-shadow: var(--shadow-lg);
+    z-index: var(--z-hud);
+  }
+  .hud-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-caps);
+    color: var(--color-muted);
+  }
+  .hud-btn {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--hud-line);
+    border-radius: var(--radius-md);
+    color: var(--color-accent);
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity var(--dur-fast) var(--ease-standard),
+                background var(--dur-fast) var(--ease-standard);
+  }
+  .hud-btn:hover { opacity: 1; background: oklch(from var(--color-accent) l c h / 0.12); }
+  .hud-btn.is-active { background: oklch(from var(--color-accent) l c h / 0.2); opacity: 1; }
+  .hud-btn[disabled] { opacity: 0.3; pointer-events: none; }
+
+  /* ===========================================================================
+     9. TAGS / PILLS / CHIPS
+     ========================================================================= */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    padding: 0.12rem 0.55rem;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    color: var(--color-muted);
+    text-decoration: none;
+    transition: color var(--dur-fast) var(--ease-standard),
+                border-color var(--dur-fast) var(--ease-standard);
+  }
+  .tag:hover { color: var(--color-accent); border-color: var(--color-accent-border); }
+  .tag.is-active {
+    background: var(--color-accent-soft);
+    border-color: var(--color-accent-border);
+    color: var(--color-accent);
+  }
+  /* Cyan chip — squarer, accent-tinted (résumé skill tags `.stg span`). */
+  .tag--chip {
+    border-radius: var(--radius-md);
+    background: var(--color-accent-soft);
+    border-color: var(--color-accent-border);
+    color: var(--color-accent);
+  }
+  /* Mint platform pill (résumé `.pl a`). */
+  .pill--mint {
+    border-radius: var(--radius-md);
+    font-weight: var(--weight-medium);
+    background: transparent;
+    border-color: oklch(from var(--color-accent-3) l c h / 0.28);
+    color: var(--color-accent-3);
+  }
+
+  /* ===========================================================================
+     10. BADGES
+     ========================================================================= */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: 1.4;
+    padding: 0.1rem 0.45rem;
+    border: 1px solid currentColor;
+    border-radius: var(--radius-md);
+    color: var(--color-muted);
+  }
+  .badge--success { color: var(--color-success); background: var(--color-success-soft); }
+  .badge--warning { color: var(--color-warning); background: var(--color-warning-soft); }
+  .badge--danger  { color: var(--color-danger);  background: var(--color-danger-soft); }
+  .badge--info    { color: var(--color-info);    background: var(--color-info-soft); }
+
+  /* ===========================================================================
+     14. FORM FIELDS
+     ========================================================================= */
+  .field { display: block; margin-bottom: var(--space-5); }
+  .field label,
+  .label {
+    display: block;
+    margin: 0 0 0.25rem;
+    font-size: var(--text-sm);
+    color: var(--color-fg-secondary);
+  }
+  input[type="text"],
+  input[type="email"],
+  input[type="search"],
+  input[type="number"],
+  textarea,
+  select,
+  .input {
+    width: 100%;
+    padding: var(--space-3) 0.75rem;
+    background: var(--color-bg-inset);
+    color: var(--color-fg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    transition: border-color var(--dur-fast) var(--ease-standard),
+                box-shadow var(--dur-fast) var(--ease-standard);
+  }
+  .input:hover, input:hover, select:hover, textarea:hover { border-color: var(--color-border-strong); }
+  .input:focus, input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px var(--color-accent-soft);
+  }
+  ::placeholder { color: var(--color-muted); }
+  /* Error: the manual `.is-error` class AND `:user-invalid`, which colours a
+     field only AFTER the user has interacted and left it invalid (no JS). */
+  .input.is-error, input.is-error,
+  .input:user-invalid, input:user-invalid, textarea:user-invalid, select:user-invalid {
+    border-color: var(--color-danger);
+  }
+  .field-hint { font-size: var(--text-sm); color: var(--color-subtle); margin-top: 0.25rem; }
+
+  input[type="color"] {
+    width: 100%;
+    height: 26px;
+    padding: 0;
+    background: var(--color-bg-inset);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+  }
+  input[type="color"]::-webkit-color-swatch { border: none; border-radius: var(--radius-xs); }
+  input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+
+  /* ===========================================================================
+     15. SLIDER / RANGE
+     ========================================================================= */
+  .range-row { display: flex; align-items: center; gap: var(--space-5); }
+  .range-row input[type="range"] { flex: 1; }
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--color-accent);
+    cursor: pointer;
+  }
+  .range-out {
+    min-width: 44px;
+    text-align: end;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-accent);
+  }
+
+  /* ===========================================================================
+     16. HERO — glow on the display heading is the default (résumé idiom)
+     ========================================================================= */
+  .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--space-9) var(--space-7);
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-display-xl);
+    letter-spacing: var(--tracking-snug);
+    line-height: var(--leading-tight);
+    margin: 0 0 var(--space-2);
+    text-shadow: var(--glow-text);
+  }
+  .hero .tagline {
+    color: var(--color-muted);
+    font-size: var(--text-lg);
+    max-width: 44ch;
+    margin: 0 auto var(--space-10);
+  }
+
+  /* ===========================================================================
+     17. ALERTS / CALLOUTS
+     ========================================================================= */
+  .alert {
+    display: flex;
+    gap: var(--space-3);
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--color-border);
+    border-inline-start-width: 3px;
+    border-radius: var(--radius-lg);
+    font-size: var(--text-base-ui);
+    color: var(--color-fg-secondary);
+  }
+  .alert .alert-title { font-weight: var(--weight-semibold); }
+  .alert--info    { border-color: var(--color-info);    background: var(--color-info-soft); }
+  .alert--info .alert-title    { color: var(--color-info); }
+  .alert--success { border-color: var(--color-success); background: var(--color-success-soft); }
+  .alert--success .alert-title { color: var(--color-success); }
+  .alert--warning { border-color: var(--color-warning); background: var(--color-warning-soft); }
+  .alert--warning .alert-title { color: var(--color-warning); }
+  .alert--danger  { border-color: var(--color-danger);  background: var(--color-danger-soft); }
+  .alert--danger .alert-title  { color: var(--color-danger); }
+
+  /* Full-screen overlay dialog (game outcome / pause). */
+  .dialog-overlay {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgb(5 9 15 / 0.86);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    z-index: var(--z-overlay);
+  }
+  .dialog-overlay h2 { text-shadow: var(--glow-text); }
+
+  /* ===========================================================================
+     18. PAGER / POST-NAV
+     ========================================================================= */
+  .pager {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--space-10);
+    padding-top: var(--space-7);
+    border-top: 1px solid var(--color-border);
+    font-size: var(--text-base-ui);
+  }
+  .pager a:hover { color: var(--color-accent-hover); }
+  .pager .is-disabled { opacity: 0.4; pointer-events: none; }
+
+  .post-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
+    margin-top: var(--space-11);
+    padding-top: var(--space-7);
+    border-top: 1px solid var(--color-border);
+  }
+  .post-nav .label { font-size: var(--text-xs); color: var(--color-muted); }
+  .post-nav .title { font-size: var(--text-base-ui); font-weight: var(--weight-semibold); color: var(--color-fg); transition: color var(--dur-fast); }
+  .post-nav a:hover .title { color: var(--color-accent); }
+
+  /* ===========================================================================
+     19. AUTHOR CARD / AVATAR
+     ========================================================================= */
+  .author-card {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: 1.5rem 1.4rem;
+  }
+  .avatar {
+    width: 84px;
+    height: 84px;
+    border-radius: var(--radius-full);
+    object-fit: cover;
+    background: var(--color-bg-elevated);
+  }
+  .avatar--lg { width: 144px; height: 144px; }
+  .avatar--halo { box-shadow: var(--glow-avatar); }
+  .author-card .bio { font-size: var(--text-base-ui); color: var(--color-fg-secondary); margin-top: var(--space-4); }
+  .author-card .links { display: flex; flex-direction: column; gap: 0.45rem; margin-top: var(--space-4); }
+
+  /* Mono contact line (résumé `.ct`): muted text, gold links, subtle dividers. */
+  .meta-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 1.2rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+  }
+  .meta-line a { color: var(--color-accent-2); }
+  .meta-line .sep { color: var(--color-subtle); }
+
+  /* ===========================================================================
+     20. FOOTER
+     ========================================================================= */
+  .site-footer {
+    text-align: center;
+    padding: var(--space-7);
+    border-top: 1px solid var(--color-border);
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+  }
+  .site-footer a { color: var(--color-muted); }
+  .site-footer a:hover { color: var(--color-fg); }
+  .site-footer--mono { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-subtle); letter-spacing: 0.02em; }
+  .site-footer--mono a { color: var(--color-accent-2); }
+
+  /* ===========================================================================
+     21. PROSE / MARKDOWN — the canonical reading surface
+     ========================================================================= */
+  .prose {
+    max-width: 70ch;
+    font-size: var(--text-prose);
+    line-height: var(--leading-prose);
+    color: var(--color-fg-secondary);
+  }
+  .prose p { margin: 1.35rem 0; }
+  .prose h2 { margin-top: 2.4rem; font-size: var(--text-h2); }
+  .prose h3 { margin-top: 2rem; font-size: var(--text-h3); }
+  .prose h2, .prose h3 { scroll-margin-top: var(--space-10); color: var(--color-fg); }
+  .prose ul, .prose ol { padding-inline-start: 1.4rem; }
+  .prose li { margin: 0.4rem 0; }
+  .prose img, .prose figure {
+    margin: 1.8rem 0;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+  }
+  .prose figcaption { text-align: center; color: var(--color-muted); font-size: var(--text-sm); }
+  .prose hr { margin: 2.8rem 0; }
+  /* Triangle ▸ bullets (résumé `.eh li`). In RTL the glyph should mirror — that's
+     content, not style, so it's left to the adopter. */
+  .prose--triangle ul { list-style: none; padding-inline-start: 1.2rem; }
+  .prose--triangle li { position: relative; }
+  .prose--triangle li::before {
+    content: "\25B8";
+    position: absolute;
+    inset-inline-start: -1.2rem;
+    color: oklch(from var(--color-accent) l c h / 0.6);
+  }
+}
+
+/* =============================================================================
+   11. CODE  ·  12. BLOCKQUOTE  ·  13. TABLES  (bare-element styling → base layer)
+   ========================================================================== */
+@layer base {
+  pre {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.55;
+    padding: 1rem 1.15rem;
+    margin: 1.6rem 0;
+    background: var(--color-bg-inset);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+  }
+  pre code { background: none; border: none; padding: 0; font-size: inherit; color: var(--color-fg-secondary); }
+  pre::-webkit-scrollbar { height: 8px; }
+  pre::-webkit-scrollbar-thumb { background: var(--color-border-strong); border-radius: var(--radius-xs); }
+
+  code, .code-inline {
+    font-family: var(--font-mono);
+    font-size: 0.86em;
+    padding: 0.12em 0.4em;
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-accent);
+  }
+
+  kbd, .kbd {
+    font-family: var(--font-mono);
+    font-size: 0.72em;
+    padding: 0 0.3em;
+    border: 1px solid currentColor;
+    border-radius: var(--radius-xs);
+    opacity: 0.7;
+  }
+
+  blockquote {
+    margin: 1.6rem 0;
+    padding: 0.9rem 1.1rem;
+    border-inline-start: 3px solid var(--color-accent);
+    border-start-start-radius: 0;
+    border-start-end-radius: var(--radius-xl);
+    border-end-end-radius: var(--radius-xl);
+    border-end-start-radius: 0;
+    background: var(--color-bg-elevated);
+    color: var(--color-fg-secondary);
+  }
+  blockquote p:first-child { margin-top: 0; }
+  blockquote p:last-child { margin-bottom: 0; }
+
+  table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+  th {
+    text-align: start;
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+    background: var(--color-surface-2);
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+  td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--color-border-muted);
+    color: var(--color-fg-secondary);
+  }
+  tbody tr:hover { background: var(--color-accent-soft); }
+  .table-num { font-variant-numeric: tabular-nums; text-align: end; }
+}
+
+/* =============================================================================
+   7. LINKS (utility variants)
+   ========================================================================== */
+@layer utilities {
+  .link-muted { color: var(--color-muted); }
+  .link-muted:hover { color: var(--color-fg); }
+  .link-gold { color: var(--color-accent-2); }       /* external / résumé contact links */
+  .prose a,
+  .link-prose {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+}
+
+/* =============================================================================
+   ACCESSIBILITY PREFERENCE OVERRIDES — additive, gated on OS user preferences;
+   the default cinematic look is never weakened. (prefers-reduced-motion lives in
+   the reset layer; prefers-contrast lives in tokens.css.) The a11y layer is
+   declared last, so these reliably override component defaults.
+   ========================================================================== */
+@layer a11y {
+  /* Drop frost/translucency when the user asks for reduced transparency. */
+  @media (prefers-reduced-transparency: reduce) {
+    .site-header--float,
+    .hud-panel {
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      background: var(--color-bg-elevated);
+    }
+    .dialog-overlay {
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      background: var(--color-bg);
+    }
+    .brand-backdrop {
+      /* keep the faint grid, drop the radial glows that read as haze. Re-state
+         background-size so the two remaining layers keep the 44px grid cell. */
+      background-image:
+        linear-gradient(var(--backdrop-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--backdrop-grid) 1px, transparent 1px);
+      background-size: var(--backdrop-grid-size) var(--backdrop-grid-size), var(--backdrop-grid-size) var(--backdrop-grid-size);
+    }
+  }
+
+  /* Windows High Contrast / forced-colors: the OS drops glows, gradients and the
+     cyan hairlines, so guarantee a real system-coloured boundary on every surface
+     and control. The cinematic look is intentionally flattened here — that is
+     correct: the user has asked the OS to own colour, and legibility wins. */
+  @media (forced-colors: active) {
+    .btn { border-color: ButtonBorder; }
+    .btn--primary,
+    .btn--glow { background: ButtonFace; color: ButtonText; box-shadow: none; }
+    .card,
+    .menu,
+    .hud-panel,
+    .site-header--float,
+    .author-card { border: 1px solid CanvasText; }
+    a.card:hover,
+    .card.is-interactive:hover { box-shadow: none; }
+    .nav a[aria-current="page"] { box-shadow: none; border-block-end: 2px solid Highlight; }
+    .hud-panel,
+    .site-header--float { -webkit-backdrop-filter: none; backdrop-filter: none; }
+    :focus-visible { outline-color: Highlight; }
+  }
+}

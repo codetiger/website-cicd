@@ -1,0 +1,295 @@
+/* =============================================================================
+   codetiger design system — tokens.css
+   The single source of truth for every design decision in the website family.
+
+   IDENTITY: a deep-navy cinematic console, derived from the single-page résumé.
+   Near-black navy canvas, cyan-tinted hairlines instead of grey borders, a
+   blue-white text ladder, and a cyan / gold / mint accent trio that glows.
+   The optional signature backdrop (radial cyan + gold glows over a faint cyan
+   grid) ships as the .brand-backdrop utility in design-system.css.
+
+   These are plain CSS custom properties (no preprocessor, no build) so the
+   no-build static résumé, the Astro blog and the Vite viewers can all consume
+   them via a single <link> or @import. They are written in MODERN, Baseline CSS
+   so the system reads as an exemplar for the projects that copy from it:
+     · OKLCH colour          — perceptual, wide-gamut (P3) headroom. Each value
+                               is the exact equivalent of the original hex (kept
+                               in a trailing comment) so the look is unchanged.
+     · relative colour syntax — borders/tints derive from ONE accent seed via
+                               oklch(from var(--color-accent) …), so they can
+                               never drift out of sync with the accent.
+     · light-dark()          — every themed colour is declared ONCE as
+                               light-dark(LIGHT, DARK); the ink theme is a
+                               colour-scheme flip, not a duplicate palette.
+                               (Glows/shadows are box-shadows, not colours, so
+                               they can't ride light-dark() — they're dropped to
+                               `none` in the ink/print blocks instead.)
+     · @layer                — design-system.css wraps everything in cascade
+                               layers so adopters override with plain CSS.
+   Keep tokens.json in sync (run `node design-system/check-tokens.mjs`).
+
+   WEB FONTS (Inter · Space Grotesk · JetBrains Mono) — load once per page:
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+   Every family degrades to a system stack if the web font is unavailable.
+
+   THE ACCENT CONTRACT (memorise this): accent (cyan) = link + hover + focus +
+   current + the single primary action. Gold = dates / awards / external links.
+   Mint = platform pills / success. Nothing else gets an accent colour.
+   ========================================================================== */
+
+:root {
+  /* DARK-FIRST: the cinematic navy is the default and OS light mode does NOT
+     auto-flip it. Opt into the ink theme with [data-theme="light"] (or print).
+     To instead honour the OS preference, change this to `light dark`. */
+  color-scheme: dark;
+
+  /* ---------------------------------------------------------------------------
+     COLOR — surfaces (deep navy). Depth is built from cyan-tinted 1px hairlines
+     + surfaces a notch lighter than the canvas, plus glow — never heavy shadow.
+     NOTE the spec arg order is light-dark(LIGHT, DARK). Dark is the default
+     (color-scheme: dark above); the LIGHT branch is the résumé PDF / paper / ink UI.
+     Comments below read in the same order: light · dark.
+  --------------------------------------------------------------------------- */
+  --color-bg:          light-dark(oklch(100% 0 89.88),       oklch(13.77% 0.0157 253.54)); /* #ffffff · #05090f */
+  --color-bg-elevated: light-dark(oklch(97.72% 0.0068 247.89), oklch(22.74% 0.0386 254.05)); /* #f4f8fc · #0f1d2e */
+  --color-surface-2:   light-dark(oklch(96.18% 0.0086 247.91), oklch(18.53% 0.0300 257.55)); /* #eef3f8 · #0a1320 */
+  --color-bg-inset:    light-dark(oklch(97.72% 0.0068 247.89), oklch(12.00% 0.0153 252.51)); /* #f4f8fc · #03060b */
+
+  /* COLOR — accent SEED (the only hand-authored chromatic colours). The ink
+     branch is contrast-tuned for white (cyan → readable blue, etc.) — kept
+     explicit, never derived, because that relationship was hand-picked for AA. */
+  --color-accent:       light-dark(oklch(52.15% 0.1363 247.86), oklch(85.54% 0.0923 227.66)); /* #0a6db3 · #8cdcff */
+  --color-accent-2:     light-dark(oklch(56.22% 0.1171 78.34),  oklch(88.03% 0.1348 86.06));   /* #9a6b00 · #ffd166 gold */
+  --color-accent-3:     light-dark(oklch(51.57% 0.1030 166.11), oklch(89.30% 0.1290 165.92));  /* #0f7a5a · #7ef7c8 mint */
+  --color-accent-hover: light-dark(oklch(43.26% 0.1086 246.35), oklch(91.33% 0.0591 222.26));  /* #075488 · #b8ecff */
+  --accent-cyan-vivid:  oklch(78.56% 0.1479 224.27);   /* #00ccff — high-energy cyan for emissive states */
+
+  /* COLOR — borders.
+     Dark: cyan-tinted hairlines DERIVED from the accent seed (the résumé's
+     signature `--line`) — change the cyan and all three reflow, no drift.
+     Ink: neutral cool greys (hand-picked, intentionally NOT cyan) — explicit. */
+  --color-border:        light-dark(oklch(89.29% 0.0175 248.02), oklch(from var(--color-accent) l c h / 0.16)); /* #d3dde7 · cyan 16% */
+  --color-border-muted:  light-dark(oklch(93.65% 0.0111 243.66), oklch(from var(--color-accent) l c h / 0.08)); /* #e4ebf1 · cyan 8%  */
+  --color-border-strong: light-dark(oklch(81.39% 0.0250 248.14), oklch(from var(--color-accent) l c h / 0.34)); /* #b6c4d2 · cyan 34% */
+
+  /* COLOR — accent fills (alpha tints of the accent; faithful in BOTH themes
+     because the accent itself flips). One source colour → every tint. */
+  --color-accent-soft:   oklch(from var(--color-accent) l c h / 0.08);   /* tint fill, selection */
+  --color-accent-border: light-dark(oklch(from var(--color-accent) l c h / 0.25),
+                                     oklch(from var(--color-accent) l c h / 0.20)); /* tinted 1px border (light 25% · dark 20%) */
+
+  /* COLOR — text ladder (blue-white → blue-grey, 4 steps) */
+  --color-fg:           light-dark(oklch(21.77% 0.0356 251.29), oklch(95.94% 0.0200 250.38)); /* #0d1b2a · #e8f3ff */
+  --color-fg-secondary: light-dark(oklch(31.33% 0.0430 248.12), oklch(84.95% 0.0376 250.79)); /* #1f3346 · #bcd0e6 */
+  --color-muted:        light-dark(oklch(50.42% 0.0427 247.48), oklch(65.82% 0.0450 251.79)); /* #51677c · #7e94ad */
+  --color-subtle:       light-dark(oklch(58.43% 0.0356 247.00), oklch(50.57% 0.0447 251.02)); /* #6b7e90 · #52677e */
+                                    /* ^ dark ~3.4:1 on bg — large / non-text only */
+
+  /* COLOR — semantic status (single values; identical in dark + ink, as before).
+     Soft fills derive from each seed so they can never drift. */
+  --color-success: oklch(89.30% 0.1290 165.92);   /* #7ef7c8 mint (== accent-3 dark) */
+  --color-warning: oklch(88.03% 0.1348 86.06);    /* #ffd166 gold (== accent-2 dark) */
+  --color-danger:  oklch(76.13% 0.1420 25.57);    /* #ff8b82 coral, legible on navy */
+  --color-info:    oklch(78.57% 0.1153 246.66);   /* #79c0ff neutral blue notice */
+  --color-success-soft: oklch(from var(--color-success) l c h / 0.10);
+  --color-warning-soft: oklch(from var(--color-warning) l c h / 0.10);
+  --color-danger-soft:  oklch(from var(--color-danger)  l c h / 0.10);
+  --color-info-soft:    oklch(from var(--color-info)    l c h / 0.10);
+
+  /* ---------------------------------------------------------------------------
+     TYPOGRAPHY — Inter body · Space Grotesk display · JetBrains Mono data
+  --------------------------------------------------------------------------- */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* type scale */
+  --text-eyebrow: 0.7rem;    /* mono uppercase section labels (résumé .st)  ~11px */
+  --text-xs: 0.72rem;        /* footer, tiny meta, HUD hints, skill tags    ~11.5px */
+  --text-sm: 0.82rem;        /* captions, post meta, nav small, table cell  ~13px  */
+  --text-base-ui: 0.9rem;    /* card body, secondary UI, button labels      ~14.4px */
+  --text-base: 1rem;         /* default body, form inputs                   16px    */
+  --text-prose: 1.075rem;    /* long-form reading size (line-height 1.8)    ~17px   */
+  --text-lg: 1.15rem;        /* tagline, lead paragraph                            */
+  --text-h3: 1.25rem;        /* h3 / card titles                                   */
+  --text-h2: 1.5rem;         /* section headings                                   */
+  --text-h1: 2rem;           /* page / post h1 baseline                            */
+  --text-display: clamp(1.6rem, 4vw, 2.4rem);      /* hero / résumé name, fluid     */
+  --text-display-xl: clamp(2rem, 6vw, 3.5rem);     /* landing hero, fluid           */
+
+  /* weights */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-heading: 650;
+  --weight-bold: 700;
+
+  /* line-heights */
+  --leading-tight: 1.1;      /* hero / display (résumé h1)    */
+  --leading-snug: 1.25;      /* h1 / h2                       */
+  --leading-normal: 1.5;     /* UI default                    */
+  --leading-relaxed: 1.6;    /* body default (résumé)         */
+  --leading-prose: 1.8;      /* blog body copy                */
+
+  /* letter-spacing */
+  --tracking-tight: -0.03em;     /* landing hero                   */
+  --tracking-snug: -0.02em;      /* résumé h1, display headings    */
+  --tracking-heading: -0.01em;   /* content headings               */
+  --tracking-caps: 0.08em;       /* uppercase labels, HUD crumbs   */
+  --tracking-caps-wide: 0.16em;  /* résumé section titles (.st)    */
+
+  /* ---------------------------------------------------------------------------
+     SPACING — one rhythm; map ad-hoc values to the nearest token
+  --------------------------------------------------------------------------- */
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.4rem;
+  --space-3: 0.6rem;
+  --space-4: 0.8rem;
+  --space-5: 1rem;
+  --space-6: 1.2rem;
+  --space-7: 1.5rem;
+  --space-8: 1.75rem;
+  --space-9: 2rem;
+  --space-10: 2.5rem;
+  --space-11: 3rem;
+  --space-12: 4rem;
+  --space-page: clamp(2rem, 5vw, 3.5rem); /* résumé page inset */
+
+  /* ---------------------------------------------------------------------------
+     RADII — résumé uses 6 (pills/chips) · 10 (cards) · 50% (avatar)
+  --------------------------------------------------------------------------- */
+  --radius-xs: 3px;
+  --radius-sm: 5px;
+  --radius-md: 6px;     /* pills, chips, inputs, buttons */
+  --radius-lg: 8px;     /* menus, alerts                */
+  --radius-xl: 10px;    /* cards, code blocks, panels   */
+  --radius-2xl: 12px;
+  --radius-3xl: 14px;   /* HUD info cards               */
+  --radius-pill: 999px;
+  --radius-full: 50%;   /* avatars, round controls      */
+
+  /* ---------------------------------------------------------------------------
+     ELEVATION — glow first (the résumé idiom); hard shadows only for float chrome.
+     Glows derive their colour from the accent seed. They are box-shadow values,
+     which light-dark() can't hold (it only takes <color>), so they're dropped to
+     `none` in the ink/print blocks at the bottom of the file instead.
+  --------------------------------------------------------------------------- */
+  --glow-text:          0 0 36px    oklch(from var(--color-accent)   l c h / 0.25); /* h1 / display */
+  --glow-avatar:        0 0 38px -6px oklch(from var(--color-accent) l c h / 0.50); /* focal image  */
+  --glow-accent:        0 0 24px -6px oklch(from var(--color-accent) l c h / 0.55); /* CTA / active */
+  --glow-accent-strong: 0 0 30px -4px oklch(from var(--color-accent) l c h / 0.85); /* CTA hover (animate from --glow-accent) */
+  --glow-gold:          0 0 28px -8px oklch(from var(--color-accent-2) l c h / 0.40);
+
+  /* Hard shadows (floating chrome only). Multi-layer shadow values can't use
+     light-dark() — its comma clashes with shadow-layer commas — so the ink
+     overrides for sm/md/lg live in the theme blocks at the bottom of the file. */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.5);
+  --shadow-md: 0 6px 18px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 16px 48px rgb(0 0 0 / 0.55);
+  --shadow-cockpit: 0 24px 60px -24px rgb(0 0 0 / 0.85);
+  --shadow-drawer: 0 -14px 36px rgb(0 0 0 / 0.55);
+  --ring-focus: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-accent);
+
+  /* ---------------------------------------------------------------------------
+     HUD — frosted floating panel for viewer / game chrome over the canvas
+  --------------------------------------------------------------------------- */
+  --hud-panel: oklch(18.53% 0.0300 257.55 / 0.88);     /* navy 88%; pair with backdrop-filter blur(10px) */
+  --hud-line:  oklch(from var(--color-accent) l c h / 0.16);
+
+  /* ---------------------------------------------------------------------------
+     BACKDROP — the signature .brand-backdrop layers (opt-in utility).
+     Live in dark, transparent in ink.
+  --------------------------------------------------------------------------- */
+  --backdrop-glow-cyan: light-dark(transparent, oklch(from var(--color-accent)   l c h / 0.100));
+  --backdrop-glow-gold: light-dark(transparent, oklch(from var(--color-accent-2) l c h / 0.050));
+  --backdrop-grid:      light-dark(transparent, oklch(from var(--color-accent)   l c h / 0.022));
+  --backdrop-grid-size: 44px;
+
+  /* ---------------------------------------------------------------------------
+     MOTION
+  --------------------------------------------------------------------------- */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.7, 0, 0.3, 1);
+  --dur-instant: 0ms;
+  --dur-fast: 150ms;
+  --dur-medium: 260ms;
+  --dur-slow: 400ms;
+  --dur-pulse: 2400ms;
+  --dur-roll: 11s;
+
+  /* ---------------------------------------------------------------------------
+     Z-INDEX
+  --------------------------------------------------------------------------- */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-hud: 15;
+  --z-drawer: 25;
+  --z-tabbar: 30;
+  --z-overlay: 50;
+  --z-popover: 60;
+  --z-toast: 80;
+
+  /* ---------------------------------------------------------------------------
+     BREAKPOINTS (for reference in @media — custom props can't be used in queries)
+  --------------------------------------------------------------------------- */
+  --bp-sm: 640px;
+  --bp-md: 820px;
+  --bp-lg: 1024px;
+  --bp-xl: 1280px;
+}
+
+/* =============================================================================
+   LIGHT / INK MODE — the document mode (résumé PDF / paper, light theme).
+   Cyan glows are unreadable on white, so the whole palette flips via the ink
+   branch of every light-dark() above; here we just switch color-scheme. The
+   accent shift, dropped glows and transparent backdrop all follow automatically.
+   Triggered by [data-theme="light"] OR print.
+   ========================================================================== */
+:root[data-theme="light"] {
+  color-scheme: light;
+  /* glows are unreadable on white — drop them (box-shadow can't ride light-dark()) */
+  --glow-text: none;
+  --glow-avatar: none;
+  --glow-accent: none;
+  --glow-accent-strong: none;
+  --glow-gold: none;
+  /* shadows can't ride light-dark() either (multi-layer comma clash) — soften them */
+  --shadow-sm: 0 1px 2px rgb(13 27 42 / 0.10);
+  --shadow-md: 0 3px 8px rgb(13 27 42 / 0.12);
+  --shadow-lg: 0 8px 24px rgb(13 27 42 / 0.14);
+}
+
+@media print {
+  :root {
+    color-scheme: light;          /* resolve every light-dark() colour to its ink branch */
+    --glow-text: none;
+    --glow-avatar: none;
+    --glow-accent: none;
+    --glow-accent-strong: none;
+    --glow-gold: none;
+    --shadow-sm: none;
+    --shadow-md: none;
+    --shadow-lg: none;
+    --shadow-cockpit: none;
+    --shadow-drawer: none;
+  }
+}
+
+/* =============================================================================
+   HIGH CONTRAST — when the user asks for more contrast, firm the faint cyan
+   hairlines and lift the lowest text step so it clears AA. Borders re-derive
+   from the accent at higher alpha, so this works in both dark and ink.
+   ========================================================================== */
+@media (prefers-contrast: more) {
+  :root {
+    --color-border:        oklch(from var(--color-accent) l c h / 0.42);
+    --color-border-muted:  oklch(from var(--color-accent) l c h / 0.26);
+    --color-border-strong: oklch(from var(--color-accent) l c h / 0.62);
+    --color-subtle: var(--color-muted);   /* lift ~3.4:1 → ~6.4:1 */
+  }
+}
