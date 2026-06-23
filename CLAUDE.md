@@ -44,8 +44,12 @@ There is no test suite in this repo. Each sub-project tests itself in its own re
 | ---------- | ---------------------------- | ------------------------------------------------ | ---------------- |
 | `/`        | `home/`                      | none (plain static HTML)                         | `dist/`          |
 | `/blog/`   | `projects/blog`              | `npm ci && npm run build` (Astro)                | `dist/blog/`     |
-| `/avarta/` | `projects/avarta`            | `wasm-pack build` → `cd web && npm run build`    | `dist/avarta/`   |
-| `/resume/` | `projects/resume` (`master`) | `python3 build.py` (Jinja2)                      | `dist/resume/`   |
+| `/avarta/` | `projects/avarta`            | `wasm-pack build crates/avarta-wasm` → `web/`; `cd web && npm ci && npm run build` | `dist/avarta/` |
+| `/resume/` | `projects/resume` (`master`) | `pip install -r requirements.txt && python3 build.py` (Jinja2) | `dist/resume/`   |
+
+`build.sh` does a clean build (`rm -rf dist` first). It only runs `git submodule update
+--init` when a submodule is **missing**, so a deliberately-modified submodule working tree is
+never clobbered — you can hack on `projects/<x>` in place and rerun `./scripts/build.sh`.
 
 ### Why the path stitching works (the key non-obvious bit)
 
@@ -69,6 +73,14 @@ own repo, not just `build.sh`.
 sub-project repos do **not** deploy. A submodule-pointer bump committed here is the deploy
 trigger. The Pages project name (`codetiger-website`) is hardcoded in the `wrangler pages
 deploy --project-name` flag.
+
+- **No manual Pages setup needed.** An idempotent "Ensure Pages project exists" step
+  (`wrangler pages project create codetiger-website`) self-bootstraps the project on first
+  deploy and no-ops thereafter. Custom domain still has to be added once in the Cloudflare UI.
+- **CI tool versions** (match these locally to reproduce a build): Node 24, Python 3.12,
+  Rust `stable` with the `wasm32-unknown-unknown` target.
+- `concurrency: { group: deploy, cancel-in-progress: true }` — a newer deploy cancels an
+  in-flight one, so the latest commit always wins.
 
 ### Submodules use SSH URLs
 
