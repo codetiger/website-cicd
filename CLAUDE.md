@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 application code of its own — it pulls several independently-maintained projects in as **git
 submodules** under `projects/`, builds each with its own toolchain, and stitches the outputs
 into a single `dist/` that is deployed to **Cloudflare Pages**. The only first-party content
-here is the landing page (`home/index.html`) and the build/deploy glue.
+here is the landing + projects pages (`home/`) and the build/deploy glue.
 
 When a task touches a sub-project's *behavior*, the change belongs in that sub-project's own
 repo (each has its own `CLAUDE.md`); this repo only orchestrates their builds and pins which
@@ -23,7 +23,7 @@ git submodule update --init --recursive
 # Build the whole site into ./dist  (needs: node+npm, rust+wasm-pack)
 ./scripts/build.sh
 
-# Preview locally — serve dist/ at the ROOT so /blog/ /avarta/ /resume/ resolve
+# Preview locally — serve dist/ at the ROOT so /blog/ /avarta/ /resume/ /tamil/ /earth/ resolve
 npx wrangler pages dev dist          # most faithful to Cloudflare Pages
 npx serve dist                       # or any static server
 python3 -m http.server 8000 -d dist  # zero-install
@@ -42,10 +42,13 @@ There is no test suite in this repo. Each sub-project tests itself in its own re
 
 | URL        | Source                       | Build                                            | Output copied to |
 | ---------- | ---------------------------- | ------------------------------------------------ | ---------------- |
-| `/`        | `home/`                      | none (plain static HTML)                         | `dist/`          |
+| `/`        | `home/index.html`            | none (plain static HTML)                         | `dist/`          |
+| `/projects/` | `home/projects/`           | none (plain static HTML)                         | `dist/projects/` |
 | `/blog/`   | `projects/blog`              | `npm ci && npm run build` (Astro)                | `dist/blog/`     |
 | `/avarta/` | `projects/avarta`            | `wasm-pack build crates/avarta-wasm` → `web/`; `cd web && npm ci && npm run build` | `dist/avarta/` |
 | `/resume/` | `projects/resume` (`master`) | `npm ci && npm run build` (Vite — game + static résumé) | `dist/resume/`   |
+| `/tamil/`  | `projects/tamil`             | `wasm-pack build wasm` → `wasm/pkg`; flat copy of `web/` (no bundler) | `dist/tamil/` |
+| `/earth/`  | `projects/vishwakarma`       | `cd web && npm ci && VITE_TILE_BASE=… npm run build` (Vite) | `dist/earth/` |
 | `/design-system/` | `design-system/` (this repo) | none (plain CSS) — `cp -R` to dist | `dist/design-system/` |
 
 `build.sh` does a clean build (`rm -rf dist` first). It only runs `git submodule update
@@ -76,6 +79,9 @@ before changing mount paths:
 - **resume** (`master`): Vite `base: '/resume/'` in the build → both pages (`index.html` game +
   `resume.html` static) emit `/resume/...` URLs, so they must be served at `/resume/`.
 - **avarta**: Vite `base: './'` (relative) → works at any depth.
+- **earth** (vishwakarma): Vite `base: './'` (relative) → works at any depth.
+- **tamil**: no bundler / no base config — `web/index.html` links `css/` + `js/` relatively and
+  `web/js/app.js` imports `../pkg/`, so a flat copy under `dist/tamil/` resolves on its own.
 
 Changing a project's mount path generally requires changing that project's base config in its
 own repo, not just `build.sh`.
@@ -99,19 +105,34 @@ deploy --project-name` flag.
 ### Submodules use SSH URLs
 
 `.gitmodules` uses `git@github.com:` URLs. CI therefore loads SSH **deploy keys** via
-`webfactory/ssh-agent` *before* `actions/checkout` (one read-only key per submodule repo,
-concatenated into the `SSH_SUBMODULE_KEYS` secret). Required CI secrets: `CLOUDFLARE_API_TOKEN`,
-`CLOUDFLARE_ACCOUNT_ID`, `SSH_SUBMODULE_KEYS`.
+`webfactory/ssh-agent` *before* `actions/checkout`. `webfactory` takes a newline-separated list of
+private keys and maps each to its repo by the key's **comment**, which must be the submodule's SSH
+URL (e.g. `git@github.com:codetiger/vishwakarma.git`). Required CI secrets: `CLOUDFLARE_API_TOKEN`,
+`CLOUDFLARE_ACCOUNT_ID`, `SSH_SUBMODULE_KEYS`, `SSH_SUBMODULE_KEYS_2`.
+
+There are **five** submodule repos, each with a read-only deploy key whose private half lives in a
+secret — split across two because Actions secrets are **write-only** (can't be read back to append):
+`SSH_SUBMODULE_KEYS` (blog, Avarta, resume) and `SSH_SUBMODULE_KEYS_2` (tamil-yaappu-analyzer,
+vishwakarma); `deploy.yml` feeds both. **Adding a submodule means adding its deploy key**
+(`gh repo deploy-key add <pub> -R codetiger/<repo>`) **and** appending its private key to one of
+these secrets — or the CI checkout fails on that repo.
 
 ## Important constraints / gotchas
 
 - **resume** (`master`) is a single Vite build: the Three.js *game* (`index.html`) plus a static
   `resume.html` rendered from `resume.json` by a Vite plugin (`src/resume/render.ts`). No Python —
   `build.sh` just runs `npm ci && npm run build`.
-- **vishwakarma is intentionally not deployed.** Its `web/public` tile pyramid is ~3.2 GB /
-  ~87k files, far over Cloudflare Pages limits (20,000 files, 25 MiB/file). It can be added
-  only after the pyramid moves to Cloudflare R2 and the viewer reads it via `VITE_TILE_BASE`.
-  Keep total `dist/` under those limits when adding anything.
+- **vishwakarma (`/earth/`) deploys the viewer only — never its tiles.** The `web/public/pyramid`
+  height-tile pyramid is ~3.2 GB / ~87k files, far over Cloudflare Pages limits (20,000 files,
+  25 MiB/file), so it is **never bundled**. The viewer streams tiles at runtime from a public
+  Cloudflare R2 url via `VITE_TILE_BASE`. The pyramid is **gitignored upstream**, so a clean/CI
+  checkout has none and the build is naturally small; a local dev checkout may have one, so
+  `build.sh` moves `public/pyramid` aside for the build (restoring it via a `trap`). Set the R2
+  base with the **`VISHWAKARMA_TILE_BASE`** env var — locally for `build.sh`, in CI via the
+  `vars.VISHWAKARMA_TILE_BASE` GitHub Actions repo variable (passed in `deploy.yml`). Empty/unset
+  falls back to the live default baked into `build.sh`: `https://voxel-data.codetiger.in/pyramid/`
+  (a public R2 bucket on a custom domain). Keep total `dist/` under the Pages limits when adding
+  anything.
 - **blog `site` config**: `projects/blog`'s `astro.config.mjs` has `site:
   'https://codetiger.github.io'`, which only affects sitemap/RSS/canonical URLs. The production
   domain change must happen in the blog repo, then the submodule pointer bumped here.
