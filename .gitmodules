@@ -10,3 +10,11 @@
 	path = projects/resume
 	url = git@github.com:codetiger/resume.git
 	branch = master
+[submodule "projects/tamil"]
+	path = projects/tamil
+	url = git@github.com:codetiger/tamil-yaappu-analyzer.git
+	branch = main
+[submodule "projects/vishwakarma"]
+	path = projects/vishwakarma
+	url = git@github.com:codetiger/vishwakarma.git
+	branch = main

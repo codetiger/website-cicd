@@ -18,12 +18,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Load the read-only SSH deploy keys BEFORE checkout so the SSH submodule
-      # URLs in .gitmodules can be fetched. One key per submodule repo, all
-      # concatenated into the SSH_SUBMODULE_KEYS secret.
+      # URLs in .gitmodules can be fetched. One key per submodule repo; webfactory
+      # maps each to its repo by the key's comment (the submodule's SSH URL).
+      # Keys are split across two write-only secrets: SSH_SUBMODULE_KEYS holds the
+      # originals (blog/Avarta/resume); SSH_SUBMODULE_KEYS_2 holds tamil + vishwakarma
+      # (added later — secrets can't be read back to append, so a 2nd one is used).
       - name: Load submodule SSH deploy keys
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SSH_SUBMODULE_KEYS }}
+          ssh-private-key: |
+            ${{ secrets.SSH_SUBMODULE_KEYS }}
+            ${{ secrets.SSH_SUBMODULE_KEYS_2 }}
 
       - name: Checkout (recursive submodules)
         uses: actions/checkout@v4
@@ -45,6 +50,10 @@ jobs:
         uses: jetli/wasm-pack-action@v0.4.0
 
       - name: Build combined site
+        env:
+          # Public Cloudflare R2 base for Earth-in-Voxels height tiles (manifest.json + tiles/).
+          # Set as a repo VARIABLE (not a secret) — empty/unset falls back to build.sh's placeholder.
+          VISHWAKARMA_TILE_BASE: ${{ vars.VISHWAKARMA_TILE_BASE }}
         run: ./scripts/build.sh
 
       # Bootstrap: create the Direct Upload Pages project on first deploy, then

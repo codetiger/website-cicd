@@ -8,8 +8,10 @@
 #   /blog/     projects/blog          Astro, base "/blog"
 #   /avarta/   projects/avarta        Rust+wasm -> Vite, relative base "./"
 #   /resume/   projects/resume        Three.js + Vite game (base "/resume/") + static résumé (one Vite build)
+#   /tamil/    projects/tamil         Rust+wasm static site (no bundler), relative paths
+#   /earth/    projects/vishwakarma   Vite voxel viewer (relative base), tiles streamed from R2
 #
-# Requires on PATH: node + npm, rust + wasm-pack (for Avarta's wasm).
+# Requires on PATH: node + npm, rust + wasm-pack (for Avarta's & Tamil's wasm).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -25,7 +27,9 @@ cd "$ROOT"
 # working tree is never clobbered.
 if [ ! -f projects/blog/package.json ] \
   || [ ! -f projects/avarta/web/package.json ] \
-  || [ ! -f projects/resume/package.json ]; then
+  || [ ! -f projects/resume/package.json ] \
+  || [ ! -f projects/tamil/wasm/Cargo.toml ] \
+  || [ ! -f projects/vishwakarma/web/package.json ]; then
   echo "==> Initializing submodules"
   git submodule update --init --recursive
 fi
@@ -77,5 +81,40 @@ echo "==> resume (Three.js game + static résumé, Vite) -> /resume/"
 )
 mkdir -p "$DIST/resume"
 cp -R "$ROOT/projects/resume/dist/." "$DIST/resume/"
+
+echo "==> tamil grammar analyzer (Rust wasm) -> /tamil/"
+# Static site, no bundler: index.html links css/ + js/ relatively and js/app.js imports
+# ../pkg/, so a flat copy under dist/tamil/ resolves correctly. Mirrors the project's own
+# deploy-pages.yml, minus the optional esbuild minification (assets shipped as-is).
+(
+  cd "$ROOT/projects/tamil"
+  # wasm-pack's --out-dir is relative to the crate dir (wasm/), so this lands in wasm/pkg.
+  wasm-pack build wasm --target web --release --out-dir pkg
+)
+mkdir -p "$DIST/tamil/pkg"
+cp "$ROOT/projects/tamil/web/index.html" "$DIST/tamil/"
+cp -R "$ROOT/projects/tamil/web/css" "$ROOT/projects/tamil/web/js" "$DIST/tamil/"
+cp "$ROOT/projects/tamil/wasm/pkg/tamil_yaappu_wasm.js" \
+   "$ROOT/projects/tamil/wasm/pkg/tamil_yaappu_wasm_bg.wasm" "$DIST/tamil/pkg/"
+
+echo "==> earth in voxels (Vite viewer; tiles from R2) -> /earth/"
+# The 3.2 GB tile pyramid is NOT bundled — the viewer streams it at runtime from VITE_TILE_BASE
+# (a public Cloudflare R2 url). The pyramid is gitignored upstream, so a clean/CI checkout has
+# none; a local dev checkout may, so we move it aside for the build to keep dist/earth small.
+# Tiles are served from a public Cloudflare R2 bucket (voxel-data) via a custom domain. The base
+# must end in a slash and hold manifest.json + tiles/. Override per-build via the
+# VISHWAKARMA_TILE_BASE env var (wired in deploy.yml); the default below is the live base.
+: "${VISHWAKARMA_TILE_BASE:=https://voxel-data.codetiger.in/pyramid/}"
+(
+  cd "$ROOT/projects/vishwakarma/web"
+  if [ -d public/pyramid ]; then
+    mv public/pyramid ../pyramid.aside
+    trap 'mv "$ROOT/projects/vishwakarma/pyramid.aside" "$ROOT/projects/vishwakarma/web/public/pyramid"' EXIT
+  fi
+  npm ci
+  VITE_TILE_BASE="$VISHWAKARMA_TILE_BASE" npm run build
+)
+mkdir -p "$DIST/earth"
+cp -R "$ROOT/projects/vishwakarma/web/dist/." "$DIST/earth/"
 
 echo "==> Done. Combined site is in $DIST"
