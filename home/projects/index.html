@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Projects — Harishankar Narayanan (codetiger)</title>
+        <meta
+            name="description"
+            content="Projects and experiments by Harishankar Narayanan (codetiger): a seashell simulator, a Tamil-prosody analyzer, a voxel Earth, robot-vacuum firmware, PulseCraft Studio, and a JSONLogic engine."
+        />
+
+        <!-- Shared design system (single source of truth, published to /design-system/
+         by scripts/build.sh). One link pulls in tokens.css via its @import. -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+        />
+        <link rel="stylesheet" href="/design-system/design-system.css" />
+
+        <style>
+            /* Page-specific layout only — identity + every component come from the design
+         system. These rules are UN-layered, so they win over the DS @layer rules. */
+            body {
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+            .hero {
+                flex: 0;
+                padding-block: var(--space-9) var(--space-7);
+            }
+            .projects {
+                max-width: 1080px;
+                width: 100%;
+                margin-inline: auto;
+                padding-inline: var(--space-page);
+                padding-bottom: var(--space-12);
+            }
+            /* Fixed 3-up grid (down to 2, then 1 on narrow screens). align-items:start lets
+               each card size to its own content instead of stretching to the tallest in the
+               row — that stretch is what made the short cards look so empty/vertical. */
+            .projects .card-grid {
+                grid-template-columns: repeat(3, 1fr);
+                align-items: start;
+                gap: var(--space-5);
+            }
+            @media (max-width: 860px) {
+                .projects .card-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+            @media (max-width: 560px) {
+                .projects .card-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+            .project {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-4);
+            }
+            .project p {
+                margin: 0;
+                color: var(--color-fg-secondary);
+            }
+            .project .tags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: var(--space-2);
+            }
+            .project .links {
+                padding-top: var(--space-2);
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: var(--space-5);
+            }
+        </style>
+    </head>
+    <body class="brand-backdrop">
+        <header class="site-header">
+            <a class="btn btn--ghost" href="/">← Back to home</a>
+        </header>
+
+        <main>
+            <section class="hero">
+                <h1>Projects &amp; Experiments</h1>
+                <p class="tagline">
+                    Graphics, simulation, language, and a hacked robot vacuum —
+                    the things I build when I'm following my curiosity.
+                </p>
+            </section>
+
+            <section class="projects">
+                <div class="card-grid">
+                    <article class="card project">
+                        <div class="eyebrow">▸ Graphics</div>
+                        <h3>Earth in Voxels</h3>
+                        <p>
+                            Streams a Web-Mercator height-tile pyramid,
+                            voxelizes it across web workers, and lets you roam a
+                            3D globe with distance-based level of detail.
+                        </p>
+                        <div class="tags">
+                            <span class="tag">TypeScript</span>
+                            <span class="tag">three.js</span>
+                            <span class="tag">Web Workers</span>
+                        </div>
+                        <div class="links">
+                            <a class="btn btn--primary" href="/earth/"
+                                >Open →</a
+                            >
+                            <a
+                                class="link-gold"
+                                href="https://github.com/codetiger/vishwakarma"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                >GitHub ↗</a
+                            >
+                        </div>
+                    </article>
+
+                    <article class="card project">
+                        <div class="eyebrow">▸ Robotics</div>
+                        <h3>Reverse-Engineering a Robot Vacuum</h3>
+                        <p>
+                            Tearing down a 3irobotix CRL-200S robot vacuum:
+                            documenting its hardware and protocols, then writing
+                            a modular open-source Rust firmware with SLAM and
+                            navigation.
+                        </p>
+                        <div class="tags">
+                            <span class="tag">Rust</span>
+                            <span class="tag">SLAM</span>
+                            <span class="tag">Reverse Engineering</span>
+                        </div>
+                        <div class="links">
+                            <a
+                                class="link-gold"
+                                href="https://github.com/codetiger/VacuumTiger"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                >Firmware ↗</a
+                            >
+                            <a
+                                class="link-gold"
+                                href="https://github.com/codetiger/VacuumRobot"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                >Research ↗</a
+                            >
+                        </div>
+                    </article>
+
+                    <article class="card project">
+                        <div class="eyebrow">▸ Simulation</div>
+                        <h3>Sea Shell Simulator</h3>
+                        <p>
+                            A generative simulator that grows seashell pigment
+                            patterns from a reaction model, compiled to
+                            WebAssembly and rendered in the browser.
+                        </p>
+                        <div class="tags">
+                            <span class="tag">Rust</span>
+                            <span class="tag">WASM</span>
+                            <span class="tag">WebGL</span>
+                        </div>
+                        <div class="links">
+                            <a class="btn btn--primary" href="/avarta/"
+                                >Open →</a
+                            >
+                            <a
+                                class="link-gold"
+                                href="https://github.com/codetiger/Avarta"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                >GitHub ↗</a
+                            >
+                        </div>
+                    </article>
+
+                    <article class="card project">
+                        <div class="eyebrow">▸ App</div>
+                        <h3>PulseCraft Studio</h3>
+                        <p>
+                            A 3D animation studio for iPhone, iPad, and Mac with
+                            a Metal ray-tracing renderer and an AI scene editor
+                            — build and keyframe scenes from natural language
+                            and export up to 4K.
+                        </p>
+                        <div class="tags">
+                            <span class="tag">Swift</span>
+                            <span class="tag">Metal</span>
+                            <span class="tag">AI</span>
+                        </div>
+                        <div class="links">
+                            <a
+                                class="btn btn--primary"
+                                href="https://pulsecraft.studio"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                >Website →</a
+                            >
+                            <a
+                                class="link-gold"
+                                href="https://apps.apple.com/in/app/pulsecraft-studio/id6502294305"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                >App Store ↗</a
+                            >
+                        </div>
+                    </article>
+
+                    <article class="card project">
+                        <div class="eyebrow">▸ Library</div>
+                        <h3>datalogic-rs · JSONLogic</h3>
+                        <p>
+                            A fast Rust implementation of JSONLogic for
+                            evaluating portable, JSON-defined rules and
+                            expressions.
+                        </p>
+                        <div class="tags">
+                            <span class="tag">Rust</span>
+                            <span class="tag">JSONLogic</span>
+                            <span class="tag">Library</span>
+                        </div>
+                        <div class="links">
+                            <a
+                                class="link-gold"
+                                href="https://github.com/GoPlasmatic/datalogic-rs"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                >GitHub ↗</a
+                            >
+                        </div>
+                    </article>
+
+                    <article class="card project">
+                        <div class="eyebrow">▸ Language</div>
+                        <h3>Tamil Grammar Analyzer</h3>
+                        <p>
+                            Breaks a Tamil verse into syllables, mora, and
+                            metrical feet, then classifies it into classical
+                            forms (Venba, Asiriyappa…) with declarative
+                            JSONLogic rules — entirely in-browser via WASM.
+                        </p>
+                        <div class="tags">
+                            <span class="tag">Rust</span>
+                            <span class="tag">WASM</span>
+                            <span class="tag">JSONLogic</span>
+                        </div>
+                        <div class="links">
+                            <a class="btn btn--primary" href="/tamil/"
+                                >Open →</a
+                            >
+                            <a
+                                class="link-gold"
+                                href="https://github.com/codetiger/tamil-yaappu-analyzer"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                >GitHub ↗</a
+                            >
+                        </div>
+                    </article>
+                </div>
+            </section>
+        </main>
+
+        <footer class="site-footer">
+            © <span id="y"></span> Harishankar Narayanan ·
+            <a href="https://github.com/codetiger">GitHub</a> ·
+            <a href="https://linkedin.com/in/code42tiger/">LinkedIn</a>
+        </footer>
+
+        <script>
+            // Set the footer year. (Plain static HTML, no build step.)
+            document.getElementById("y").textContent = new Date().getFullYear();
+        </script>
+    </body>
+</html>
