@@ -1,112 +1,86 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Harishankar Narayanan — codetiger</title>
-    <meta
-      name="description"
-      content="Personal site of Harishankar Narayanan (codetiger): blog, projects, and résumé."
-    />
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Harishankar Narayanan — codetiger</title>
+        <meta
+            name="description"
+            content="Personal site of Harishankar Narayanan (codetiger): blog, projects, and résumé."
+        />
 
-    <!-- Shared design system (single source of truth, published to /design-system/
+        <!-- Shared design system (single source of truth, published to /design-system/
          by scripts/build.sh). One link pulls in tokens.css via its @import. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
-    />
-    <link rel="stylesheet" href="/design-system/design-system.css" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+        />
+        <link rel="stylesheet" href="/design-system/design-system.css" />
 
-    <style>
-      /* Page-specific layout only — identity + every component come from the design
+        <style>
+            /* Page-specific layout only — identity + every component come from the design
          system. These rules are UN-layered, so they win over the DS @layer rules
          with no specificity battle (the DS override contract). */
-      body {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-      }
-      .hero {
-        flex: 1;
-      }
-      .cards {
-        max-width: 760px;
-        width: 100%;
-        margin-inline: auto;
-      }
-    </style>
-  </head>
-  <body class="brand-backdrop">
-    <header class="site-header">
-      <div class="brand">codetiger</div>
-      <nav class="nav">
-        <a href="/blog/">Blog</a>
-        <div class="dropdown" id="projects">
-          <button aria-haspopup="true" aria-expanded="false">Projects ▾</button>
-          <div class="menu">
-            <a href="/avarta/">Avarta<small>Generative seashells — Rust+WASM, real-time path tracing</small></a>
-            <a href="/resume/">Résumé<small>Experience &amp; background</small></a>
-            <!-- Vishwakarma is excluded from the deploy until its tile pyramid is hosted on R2. -->
-            <a class="soon">Vishwakarma<small>Voxel terrain viewer — coming soon</small></a>
-          </div>
-        </div>
-      </nav>
-    </header>
+            body {
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+            .hero {
+                flex: 1;
+            }
+            .cards {
+                max-width: 760px;
+                width: 100%;
+                margin-inline: auto;
+                display: grid;
+                gap: var(--space-5);
+                grid-template-columns: 1fr;
+            }
+            @media (min-width: 560px) {
+                .cards {
+                    grid-template-columns: 1fr 1fr;
+                }
+            }
+        </style>
+    </head>
+    <body class="brand-backdrop">
+        <main class="hero">
+            <h1>Harishankar Narayanan</h1>
+            <p class="tagline">
+                Engineering leader by trade — graphics, simulation, and
+                generative experiments by curiosity.
+            </p>
+            <div class="cards">
+                <a class="card" href="/blog/">
+                    <h3>Thoughts &amp; Tinkering (Blog) →</h3>
+                    <p>
+                        Side projects and tinkering, the odd personal update,
+                        and the ideas I keep coming back to.
+                    </p>
+                </a>
+                <a class="card" href="/resume/">
+                    <h3>My Resume (Game) →</h3>
+                    <p>
+                        Roll a cube across a 3D board through 21 years of
+                        building large-scale systems — or skip the game and read
+                        the plain version.
+                    </p>
+                </a>
+            </div>
+        </main>
 
-    <main class="hero">
-      <h1>Harishankar Narayanan</h1>
-      <p class="tagline">
-        Engineering leader by trade — graphics, simulation, and generative experiments by curiosity.
-      </p>
-      <div class="cards card-grid">
-        <a class="card" href="/blog/">
-          <h3>Blog →</h3>
-          <p>Notes on graphics, code, and side projects.</p>
-        </a>
-        <a class="card" href="/avarta/">
-          <h3>Avarta →</h3>
-          <p>3D seashells grown from a handful of numbers — a Rust+WASM core, path-traced in the browser.</p>
-        </a>
-        <a class="card" href="/resume/">
-          <h3>Résumé →</h3>
-          <p>20+ years building scalable, low-latency distributed systems.</p>
-        </a>
-      </div>
-    </main>
+        <footer class="site-footer">
+            © <span id="y"></span> Harishankar Narayanan ·
+            <a href="https://github.com/codetiger">GitHub</a> ·
+            <a href="https://linkedin.com/in/code42tiger/">LinkedIn</a>
+        </footer>
 
-    <footer class="site-footer">
-      © <span id="y"></span> Harishankar Narayanan ·
-      <a href="https://github.com/codetiger">GitHub</a> ·
-      <a href="https://linkedin.com/in/code42tiger/">LinkedIn</a>
-    </footer>
-
-    <script>
-      // Projects dropdown: click to toggle, click-away / Escape to close.
-      // (This page is plain static HTML with no build step.)
-      const dd = document.getElementById('projects');
-      const btn = dd.querySelector('button');
-      const menu = dd.querySelector('.menu');
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const open = menu.classList.toggle('open');
-        dd.dataset.open = String(open);
-        btn.setAttribute('aria-expanded', String(open));
-      });
-      document.addEventListener('click', () => {
-        menu.classList.remove('open');
-        dd.dataset.open = 'false';
-        btn.setAttribute('aria-expanded', 'false');
-      });
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-          menu.classList.remove('open');
-          dd.dataset.open = 'false';
-          btn.setAttribute('aria-expanded', 'false');
-        }
-      });
-      document.getElementById('y').textContent = new Date().getFullYear();
-    </script>
-  </body>
+        <script>
+            // Set the footer year. (Plain static HTML, no build step.)
+            document.getElementById("y").textContent = new Date().getFullYear();
+        </script>
+    </body>
 </html>
