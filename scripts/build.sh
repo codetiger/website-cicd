@@ -7,13 +7,17 @@
 #   /          home/                  this repo (plain static HTML)
 #   /blog/     projects/blog          Astro, base "/blog"
 #   /avarta/   projects/avarta        Rust+wasm -> Vite, relative base "./"
-#   /resume/   projects/resume        Three.js + Vite game (base "/resume/") + Python/Jinja2 static fallback
+#   /resume/   projects/resume        Three.js + Vite game (base "/resume/") + static résumé (one Vite build)
 #
-# Requires on PATH: node + npm, python3, rust + wasm-pack (for Avarta's wasm).
+# Requires on PATH: node + npm, rust + wasm-pack (for Avarta's wasm).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST="$ROOT/dist"
+# Single source of truth for the shared design system. Published to /design-system/
+# below and linked at runtime by every page (home/blog/avarta/resume). Exported so the
+# sub-projects' dev servers can find it to serve locally (overrides their default lookup).
+export DESIGN_SYSTEM_DIR="$ROOT/design-system"
 cd "$ROOT"
 
 # Ensure submodules are checked out. No-op in CI (actions/checkout already did
@@ -21,7 +25,7 @@ cd "$ROOT"
 # working tree is never clobbered.
 if [ ! -f projects/blog/package.json ] \
   || [ ! -f projects/avarta/web/package.json ] \
-  || [ ! -f projects/resume/build.py ]; then
+  || [ ! -f projects/resume/package.json ]; then
   echo "==> Initializing submodules"
   git submodule update --init --recursive
 fi
@@ -32,6 +36,13 @@ mkdir -p "$DIST"
 
 echo "==> Home page -> /"
 cp -R "$ROOT/home/." "$DIST/"
+
+echo "==> design system -> /design-system/"
+# Serve the whole folder so tokens.css + design-system.css are linkable at
+# /design-system/... (the relative @import "./tokens.css" keeps resolving) and the
+# living style guide (index.html) is browsable as a visual-regression surface.
+mkdir -p "$DIST/design-system"
+cp -R "$DESIGN_SYSTEM_DIR/." "$DIST/design-system/"
 
 echo "==> blog (Astro) -> /blog/"
 (
@@ -55,15 +66,14 @@ echo "==> avarta (Rust wasm + Vite) -> /avarta/"
 mkdir -p "$DIST/avarta"
 cp -R "$ROOT/projects/avarta/web/dist/." "$DIST/avarta/"
 
-echo "==> resume (Three.js game + Python static fallback, Vite) -> /resume/"
+echo "==> resume (Three.js game + static résumé, Vite) -> /resume/"
 (
   cd "$ROOT/projects/resume"
-  python3 -m pip install --quiet -r requirements.txt
   npm ci
-  # build:site = `python3 build.py` (renders the static resume.html fallback) then
-  # `vite build` (the Three.js game). Vite base is '/resume/' and publicDir is
-  # 'assets', so the output lands in dist/ ready to serve at /resume/.
-  npm run build:site
+  # One `vite build` emits both pages: the Three.js game (index.html) and the static
+  # résumé (resume.html, rendered from resume.json by a Vite plugin). Base is '/resume/'
+  # and publicDir is 'assets', so the output lands in dist/ ready to serve at /resume/.
+  npm run build
 )
 mkdir -p "$DIST/resume"
 cp -R "$ROOT/projects/resume/dist/." "$DIST/resume/"

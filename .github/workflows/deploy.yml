@@ -36,11 +36,6 @@ jobs:
         with:
           node-version: 24
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
       - name: Set up Rust (wasm target)
         uses: dtolnay/rust-toolchain@stable
         with:

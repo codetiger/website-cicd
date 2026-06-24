@@ -8,169 +8,40 @@
       name="description"
       content="Personal site of Harishankar Narayanan (codetiger): blog, projects, and résumé."
     />
+
+    <!-- Shared design system (single source of truth, published to /design-system/
+         by scripts/build.sh). One link pulls in tokens.css via its @import. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <link rel="stylesheet" href="/design-system/design-system.css" />
+
     <style>
-      :root {
-        --bg: #0d1117;
-        --fg: #e6edf3;
-        --muted: #8b949e;
-        --accent: #58a6ff;
-        --card: #161b22;
-        --border: #30363d;
-      }
-      * {
-        box-sizing: border-box;
-      }
-      html,
+      /* Page-specific layout only — identity + every component come from the design
+         system. These rules are UN-layered, so they win over the DS @layer rules
+         with no specificity battle (the DS override contract). */
       body {
-        margin: 0;
-        padding: 0;
-      }
-      body {
-        background: var(--bg);
-        color: var(--fg);
-        font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         min-height: 100vh;
         display: flex;
         flex-direction: column;
       }
-      header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid var(--border);
-      }
-      .brand {
-        font-weight: 700;
-        letter-spacing: -0.02em;
-      }
-      nav {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-      }
-      nav a,
-      .dropdown > button {
-        color: var(--fg);
-        text-decoration: none;
-        padding: 0.4rem 0.6rem;
-        border-radius: 6px;
-        font: inherit;
-      }
-      nav a:hover,
-      .dropdown > button:hover,
-      .dropdown[data-open="true"] > button {
-        background: var(--card);
-        color: var(--accent);
-      }
-      .dropdown {
-        position: relative;
-      }
-      .dropdown > button {
-        background: none;
-        border: none;
-        cursor: pointer;
-      }
-      .menu {
-        position: absolute;
-        right: 0;
-        top: 100%;
-        margin-top: 0.4rem;
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        min-width: 240px;
-        padding: 0.4rem;
-        display: none;
-        z-index: 10;
-      }
-      .menu.open {
-        display: block;
-      }
-      .menu a {
-        display: block;
-        padding: 0.5rem 0.6rem;
-        border-radius: 6px;
-      }
-      .menu a:hover {
-        background: var(--bg);
-      }
-      .menu a small {
-        display: block;
-        color: var(--muted);
-        font-size: 0.78rem;
-        margin-top: 0.15rem;
-      }
-      .menu a.soon {
-        opacity: 0.5;
-        pointer-events: none;
-      }
-      main {
+      .hero {
         flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 2rem 1.5rem;
-      }
-      h1 {
-        font-size: clamp(2rem, 6vw, 3.5rem);
-        margin: 0 0 0.5rem;
-        letter-spacing: -0.03em;
-      }
-      .tagline {
-        color: var(--muted);
-        font-size: 1.15rem;
-        max-width: 44ch;
-        margin: 0 auto 2.5rem;
       }
       .cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-        gap: 1rem;
         max-width: 760px;
         width: 100%;
-      }
-      .card {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 1.2rem;
-        text-align: left;
-        text-decoration: none;
-        color: var(--fg);
-        transition: border-color 0.15s;
-      }
-      .card:hover {
-        border-color: var(--accent);
-      }
-      .card h3 {
-        margin: 0 0 0.35rem;
-      }
-      .card p {
-        margin: 0;
-        color: var(--muted);
-        font-size: 0.9rem;
-        line-height: 1.4;
-      }
-      footer {
-        text-align: center;
-        padding: 1.5rem;
-        color: var(--muted);
-        font-size: 0.85rem;
-        border-top: 1px solid var(--border);
-      }
-      footer a {
-        color: var(--muted);
+        margin-inline: auto;
       }
     </style>
   </head>
-  <body>
-    <header>
+  <body class="brand-backdrop">
+    <header class="site-header">
       <div class="brand">codetiger</div>
-      <nav>
+      <nav class="nav">
         <a href="/blog/">Blog</a>
         <div class="dropdown" id="projects">
           <button aria-haspopup="true" aria-expanded="false">Projects ▾</button>
@@ -184,12 +55,12 @@
       </nav>
     </header>
 
-    <main>
+    <main class="hero">
       <h1>Harishankar Narayanan</h1>
       <p class="tagline">
         Engineering leader by trade — graphics, simulation, and generative experiments by curiosity.
       </p>
-      <div class="cards">
+      <div class="cards card-grid">
         <a class="card" href="/blog/">
           <h3>Blog →</h3>
           <p>Notes on graphics, code, and side projects.</p>
@@ -205,7 +76,7 @@
       </div>
     </main>
 
-    <footer>
+    <footer class="site-footer">
       © <span id="y"></span> Harishankar Narayanan ·
       <a href="https://github.com/codetiger">GitHub</a> ·
       <a href="https://linkedin.com/in/code42tiger/">LinkedIn</a>

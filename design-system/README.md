@@ -212,6 +212,43 @@ weakened — these only activate when the user asks):
 
 ---
 
+## Distribution — how projects consume this
+
+The design system **lives here, in the aggregator** (not a separate repo). `scripts/build.sh`
+distributes it two ways on every build:
+
+1. **Published as a static bundle.** `cp -R design-system/. dist/design-system/` makes
+   `tokens.css` + `design-system.css` linkable at `/design-system/...` (the relative
+   `@import "./tokens.css"` keeps resolving) and serves the style guide at `/design-system/`.
+2. **Located for the sub-projects' dev servers.** `build.sh` exports
+   `DESIGN_SYSTEM_DIR=$ROOT/design-system`; each project's dev middleware (blog/avarta/resume) uses
+   it to serve `/design-system/` locally during `npm run dev`. It also has relative-path fallbacks,
+   so the var is just an override.
+
+Because the whole site is **one same-origin Cloudflare Pages deploy**, consumers just link the
+published copy — no npm package, no submodule, no per-project vendoring:
+
+```html
+<link rel="stylesheet" href="/design-system/design-system.css" />   <!-- absolute, same-origin -->
+```
+
+That absolute URL resolves the same for `/`, `/blog/`, `/avarta/`, `/resume/` regardless of each
+project's own base path (`/blog`, `./`, `/resume/`), since the base only affects *relative* URLs. **A token edit here
+re-deploys site-wide on the next aggregator build with no per-project rebuild** — the linked
+copy updates in place.
+
+| Project | How it consumes | Layer |
+| --- | --- | --- |
+| **home** (this repo) | runtime `<link href="/design-system/design-system.css">` | tokens + components |
+| **blog**, **avarta** | runtime `<link>` (in their own repos) | tokens + components |
+| **résumé** (game + static page) | runtime `<link href="/design-system/tokens.css">` (in its own repo) | tokens only — both pages own their components |
+
+**Standalone-dev caveat.** `/design-system/...` only exists in the unified build. A sub-project
+run on its own (`npm run dev` outside the aggregator) won't see it — preview through the
+aggregator instead (`./scripts/build.sh && npx serve dist`, the faithful local preview), or drop
+a dev-only copy of `design-system/` into that project. This is the deliberate cost of a single
+source + instant propagation (chosen over bundling a hashed copy into each project).
+
 ## Per-project adoption
 
 The whole family now shares one skin, so adoption is mostly: load the fonts, link the
@@ -222,15 +259,14 @@ After aligning a sub-project, bump its submodule pointer here to deploy.
 
 | Project | Backdrop | Notes |
 | --- | --- | --- |
-| **résumé doc** (`projects/resume`, `master`) | on | The seed — already this exact palette. Promote its inline vars to the shared tokens; keep its `@media print` ink mode (now standardised here). Re-run `python3 build.py`. |
+| **résumé** (`projects/resume`, `master`) | on | The seed — already this exact palette. Game + static `resume.html` link `tokens.css` and alias their local vars to it; `src/resume/render.ts` renders the static page from `resume.json` (one Vite build, no Python). |
 | **home** (`home/index.html`) | hero only | Re-base from GitHub-grey to the navy/cyan tokens; brand + hero h1 use Space Grotesk + `--glow-text`; cards/dropdown/footer map 1:1. |
 | **blog** (`projects/blog`) | off (flat) | Adopt tokens; keep 1.075rem/1.8 prose. Cyan links, ▸ bullets optional. Skip the grid backdrop behind articles. |
-| **résumé game** (Vite branch) | on | Already cockpit-native — formalise on `--hud-panel`/`--hud-line`/`--glow-*`. Ensure `prefers-reduced-motion` everywhere. |
 | **Avarta** (`Avarta/web`) | on | Titlebar → `.site-header--float`; sliders → Slider (cyan `accent-color`); palette → color wells; status → Badge. |
 | **Vishwakarma** (`vishwakarma/web`) | on | Route all panel chrome through `.hud-panel`; align error red to `--color-danger`. Adopt now so it’s consistent when it ships (post-R2). |
 
-### Optional: publish the style guide
+### The published style guide doubles as a visual-regression surface
 
-To serve the guide at `/design-system/`, add `cp -r design-system dist/design-system`
-to `scripts/build.sh`. It then doubles as a visual regression surface — eyeball every
-component after a token change.
+`scripts/build.sh` already copies this folder to `dist/design-system/` (see § Distribution),
+so the guide is live at `/design-system/` on every deploy. Eyeball it after any token change —
+every component, in every state, on the real build.

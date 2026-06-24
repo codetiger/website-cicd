@@ -20,7 +20,7 @@ commit of each gets published.
 # First checkout (or after the pin changes)
 git submodule update --init --recursive
 
-# Build the whole site into ./dist  (needs: node+npm, python3, rust+wasm-pack)
+# Build the whole site into ./dist  (needs: node+npm, rust+wasm-pack)
 ./scripts/build.sh
 
 # Preview locally — serve dist/ at the ROOT so /blog/ /avarta/ /resume/ resolve
@@ -45,11 +45,25 @@ There is no test suite in this repo. Each sub-project tests itself in its own re
 | `/`        | `home/`                      | none (plain static HTML)                         | `dist/`          |
 | `/blog/`   | `projects/blog`              | `npm ci && npm run build` (Astro)                | `dist/blog/`     |
 | `/avarta/` | `projects/avarta`            | `wasm-pack build crates/avarta-wasm` → `web/`; `cd web && npm ci && npm run build` | `dist/avarta/` |
-| `/resume/` | `projects/resume` (`master`) | `pip install -r requirements.txt && python3 build.py` (Jinja2) | `dist/resume/`   |
+| `/resume/` | `projects/resume` (`master`) | `npm ci && npm run build` (Vite — game + static résumé) | `dist/resume/`   |
+| `/design-system/` | `design-system/` (this repo) | none (plain CSS) — `cp -R` to dist | `dist/design-system/` |
 
 `build.sh` does a clean build (`rm -rf dist` first). It only runs `git submodule update
 --init` when a submodule is **missing**, so a deliberately-modified submodule working tree is
 never clobbered — you can hack on `projects/<x>` in place and rerun `./scripts/build.sh`.
+
+### Shared design system → `/design-system/`
+
+`design-system/` is the **single visual source of truth** for the whole family (tokens +
+components; see its own `README.md`). `build.sh` does two things with it: (1) copies it to
+`dist/design-system/` so consumers load it at runtime with one
+`<link href="/design-system/design-system.css">` (works because everything is one
+same-origin deploy), and (2) exports `DESIGN_SYSTEM_DIR="$ROOT/design-system"` so the sub-projects'
+dev servers can locate it to serve `/design-system/` locally. Every page links the published copy
+(the résumé links `tokens.css`; the others `design-system.css`), so a design-system edit
+re-deploys site-wide on the next aggregator build with no per-project rebuild. Sub-project
+adoption (the `<link>` + restyle) lands in each project's own repo, then its pointer is bumped
+here — see `design-system/README.md` § Distribution.
 
 ### Why the path stitching works (the key non-obvious bit)
 
@@ -59,8 +73,8 @@ before changing mount paths:
 
 - **blog**: Astro `base: '/blog'` (hardcoded in its `astro.config.mjs`) → emits `/blog/...`
   absolute URLs, so it must be served at `/blog/`.
-- **resume** (`master`): `build.py` emits a single **self-contained** `public/index.html`
-  (assets base64-inlined) → works at any path.
+- **resume** (`master`): Vite `base: '/resume/'` in the build → both pages (`index.html` game +
+  `resume.html` static) emit `/resume/...` URLs, so they must be served at `/resume/`.
 - **avarta**: Vite `base: './'` (relative) → works at any depth.
 
 Changing a project's mount path generally requires changing that project's base config in its
@@ -77,8 +91,8 @@ deploy --project-name` flag.
 - **No manual Pages setup needed.** An idempotent "Ensure Pages project exists" step
   (`wrangler pages project create codetiger-website`) self-bootstraps the project on first
   deploy and no-ops thereafter. Custom domain still has to be added once in the Cloudflare UI.
-- **CI tool versions** (match these locally to reproduce a build): Node 24, Python 3.12,
-  Rust `stable` with the `wasm32-unknown-unknown` target.
+- **CI tool versions** (match these locally to reproduce a build): Node 24, Rust `stable` with
+  the `wasm32-unknown-unknown` target.
 - `concurrency: { group: deploy, cancel-in-progress: true }` — a newer deploy cancels an
   in-flight one, so the latest commit always wins.
 
@@ -91,9 +105,9 @@ concatenated into the `SSH_SUBMODULE_KEYS` secret). Required CI secrets: `CLOUDF
 
 ## Important constraints / gotchas
 
-- **resume is pinned to `master`** (the simple static Python résumé). A richer Three.js résumé
-  *game* (Vite, base `/resume/`) lives on an unmerged branch — if it lands on `master`, the
-  resume build step in `build.sh` must switch to the Python+`npm run build` (Vite) flow.
+- **resume** (`master`) is a single Vite build: the Three.js *game* (`index.html`) plus a static
+  `resume.html` rendered from `resume.json` by a Vite plugin (`src/resume/render.ts`). No Python —
+  `build.sh` just runs `npm ci && npm run build`.
 - **vishwakarma is intentionally not deployed.** Its `web/public` tile pyramid is ~3.2 GB /
   ~87k files, far over Cloudflare Pages limits (20,000 files, 25 MiB/file). It can be added
   only after the pyramid moves to Cloudflare R2 and the viewer reads it via `VITE_TILE_BASE`.
