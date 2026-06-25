@@ -8,7 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 application code of its own — it pulls several independently-maintained projects in as **git
 submodules** under `projects/`, builds each with its own toolchain, and stitches the outputs
 into a single `dist/` that is deployed to **Cloudflare Pages**. The only first-party content
-here is the landing + projects pages (`home/`) and the build/deploy glue.
+here is the landing + projects pages (`home/`), the shared `design-system/`, and the
+build/deploy glue (`scripts/build.sh` + `scripts/minify.mjs`).
 
 When a task touches a sub-project's *behavior*, the change belongs in that sub-project's own
 repo (each has its own `CLAUDE.md`); this repo only orchestrates their builds and pins which
@@ -85,6 +86,31 @@ before changing mount paths:
 
 Changing a project's mount path generally requires changing that project's base config in its
 own repo, not just `build.sh`.
+
+### Production minification
+
+After every project's output is in `dist/`, `build.sh` runs `scripts/minify.mjs`, which walks
+`dist/` and minifies **every `*.html` / `*.css` / `*.js`** in place — identifier *mangling*
+only, no obfuscation (obfuscation would *grow* files). It is **extension-driven**, so new
+first-party files are picked up automatically with no list to maintain. It **skips the
+`blog`/`avarta`/`resume`/`earth` mounts** (`EXCLUDE_TOPLEVEL` in the script), whose output is
+already minified by their own Vite/Astro bundlers — re-minifying them is wasted work and would
+orphan `resume`'s source map. So in practice the pass covers the raw `cp` copies: `home/`,
+`design-system/`, and `tamil/`'s static `web/` + its wasm-bindgen glue `.js` (the `.wasm`
+binary and non-code files like `.mjs` tooling are skipped — their extension isn't matched).
+
+- **Tooling** lives in a root `package.json` + committed `package-lock.json` (the only npm
+  manifest in this repo); the gate runs `npm ci` to install the two devDeps. **esbuild** handles
+  CSS/JS (`charset:'utf8'` to keep Tamil text as compact UTF-8, **no bundle** so tamil's ESM
+  imports and the dynamic `../pkg` wasm import survive, and modern CSS — OKLCH / `light-dark()` /
+  relative-color / `@layer` / nesting — is left intact, never lowered to fallbacks).
+  **html-minifier-terser** handles HTML, including inline `<script>` (terser) and `<style>`.
+- **Gate:** on by default; `MINIFY=0 ./scripts/build.sh` skips the whole pass *and* its `npm ci`
+  for a fast, readable `dist/` when debugging. CI leaves `MINIFY` unset → it minifies.
+- **No pre-compression.** Cloudflare Pages applies Brotli/gzip at the edge, so we ship plain
+  minified text — no `.br`/`.gz` artifacts.
+- **Adding a new bundler-built sub-project?** Add its mount name to `EXCLUDE_TOPLEVEL` so its
+  already-minified, source-mapped output isn't re-chewed (you're editing `build.sh` for it anyway).
 
 ### Deploy
 
