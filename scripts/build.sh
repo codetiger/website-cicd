@@ -117,4 +117,17 @@ echo "==> earth in voxels (Vite viewer; tiles from R2) -> /earth/"
 mkdir -p "$DIST/earth"
 cp -R "$ROOT/projects/vishwakarma/web/dist/." "$DIST/earth/"
 
+# Minify every *.html/*.css/*.js in dist/ (identifier mangling only, no obfuscation).
+# scripts/minify.mjs walks dist/ by extension and skips the blog/avarta/resume/earth
+# mounts, which already ship minified from their own Vite/Astro builds. MINIFY=0 skips
+# the whole pass for a fast, readable dist/ when debugging locally; npm ci sits inside
+# the gate so that debug path doesn't install the minifier deps.
+if [ "${MINIFY:-1}" != "0" ]; then
+  echo "==> Minifying first-party static assets"
+  npm ci
+  node "$ROOT/scripts/minify.mjs"
+else
+  echo "==> MINIFY=0 — skipping minification (dist/ left un-minified)"
+fi
+
 echo "==> Done. Combined site is in $DIST"

@@ -1,0 +1,14 @@
+{
+  "name": "website-cicd",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Aggregator build for the codetiger website family. Holds the cross-project build glue (notably the production minifier); each page's app lives in its own submodule under projects/.",
+  "scripts": {
+    "minify": "node scripts/minify.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1",
+    "html-minifier-terser": "^7.2.0"
+  }
+}
