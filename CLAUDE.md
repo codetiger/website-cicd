@@ -156,8 +156,10 @@ these secrets — or the CI checkout fails on that repo.
   `build.sh` moves `public/pyramid` aside for the build (restoring it via a `trap`). Set the R2
   base with the **`VISHWAKARMA_TILE_BASE`** env var — locally for `build.sh`, in CI via the
   `vars.VISHWAKARMA_TILE_BASE` GitHub Actions repo variable (passed in `deploy.yml`). Empty/unset
-  falls back to the live default baked into `build.sh`: `https://voxel-data.codetiger.in/pyramid/`
-  (a public R2 bucket on a custom domain). Keep total `dist/` under the Pages limits when adding
+  falls back to the live default baked into `build.sh`: `https://voxel-data.codetiger.in/pyramid_v2/`
+  (a public R2 bucket on a custom domain — `pyramid_v2/` is the retiled sparse `version: 3` pyramid
+  with a `uniform.bin` index and water class that the current viewer expects; the older `version: 2`
+  `pyramid/` predates the retile). Keep total `dist/` under the Pages limits when adding
   anything. **The place-name label pyramid works the exact same way** (`web/public/labels`,
   ~0.4 GB, also gitignored/generated): streamed at runtime from `VITE_LABELS_BASE`, set via the
   **`VISHWAKARMA_LABELS_BASE`** env var / `vars.VISHWAKARMA_LABELS_BASE` repo variable, defaulting

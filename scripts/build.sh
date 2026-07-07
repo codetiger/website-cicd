@@ -107,7 +107,7 @@ echo "==> earth in voxels (Vite viewer; tiles + labels from R2) -> /earth/"
 # VISHWAKARMA_*_BASE env vars (wired in deploy.yml); the defaults below are the live R2 bases.
 # VITE_LABELS_BASE MUST be set at build time: unset, the app looks for a bundled public/labels/
 # that a clean checkout never has, so /earth/ would 404 every label tile.
-: "${VISHWAKARMA_TILE_BASE:=https://voxel-data.codetiger.in/pyramid/}"
+: "${VISHWAKARMA_TILE_BASE:=https://voxel-data.codetiger.in/pyramid_v2/}"
 : "${VISHWAKARMA_LABELS_BASE:=https://voxel-data.codetiger.in/labels/}"
 (
   cd "$ROOT/projects/vishwakarma/web"
