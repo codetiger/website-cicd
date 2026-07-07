@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" role="img" aria-label="datalogic-rs JSONLogic engine">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#12243a"/><stop offset="1" stop-color="#070d16"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="45%" r="60%">
+      <stop offset="0" stop-color="#8cdcff" stop-opacity=".20"/>
+      <stop offset="1" stop-color="#8cdcff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="320" height="200" fill="url(#bg)"/>
+  <rect width="320" height="200" fill="url(#glow)"/>
+  <!-- braces framing a rule tree -->
+  <text x="30" y="146" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="150" fill="#8cdcff" fill-opacity=".8">{</text>
+  <text x="248" y="146" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="150" fill="#8cdcff" fill-opacity=".8">}</text>
+  <!-- logic tree -->
+  <g stroke="#8cdcff" stroke-width="1.8" fill="none" stroke-opacity=".8">
+    <path d="M160 66 L128 112"/>
+    <path d="M160 66 L192 112"/>
+    <path d="M128 112 L128 140"/>
+    <path d="M192 112 L192 140"/>
+  </g>
+  <g stroke-width="2">
+    <circle cx="160" cy="66" r="11" fill="#0c2740" stroke="#7ef7c8"/>
+    <circle cx="128" cy="112" r="9" fill="#0c2740" stroke="#8cdcff"/>
+    <circle cx="192" cy="112" r="9" fill="#0c2740" stroke="#8cdcff"/>
+    <rect x="120" y="140" width="16" height="14" rx="3" fill="#7ef7c8" fill-opacity=".85" stroke="none"/>
+    <rect x="184" y="140" width="16" height="14" rx="3" fill="#ffd166" fill-opacity=".8" stroke="none"/>
+  </g>
+</svg>

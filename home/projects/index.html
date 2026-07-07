@@ -6,7 +6,7 @@
         <title>Projects — Harishankar Narayanan (codetiger)</title>
         <meta
             name="description"
-            content="Projects and experiments by Harishankar Narayanan (codetiger): a seashell simulator, a Tamil-prosody analyzer, a voxel Earth, robot-vacuum firmware, PulseCraft Studio, and a JSONLogic engine."
+            content="Projects and experiments by Harishankar Narayanan (codetiger): a voxel Earth, a seashell simulator, a Tamil-prosody analyzer, robot-vacuum firmware, PulseCraft Studio, a JSONLogic engine, the PowerTiger energy monitor, the GameTiger RP2040 handheld, and the RaLiSat-1 high-altitude balloon."
         />
 
         <!-- Shared design system (single source of truth, published to /design-system/
@@ -38,12 +38,13 @@
                 padding-inline: var(--space-page);
                 padding-bottom: var(--space-12);
             }
-            /* Fixed 3-up grid (down to 2, then 1 on narrow screens). align-items:start lets
-               each card size to its own content instead of stretching to the tallest in the
-               row — that stretch is what made the short cards look so empty/vertical. */
+            /* Fixed 3-up grid (down to 2, then 1 on narrow screens). grid-auto-rows:1fr
+               makes every row as tall as the tallest card, so all cards share one fixed
+               size; each card stretches to fill its cell (default align-items) and .links
+               is pushed to the bottom so the CTAs line up across the whole grid. */
             .projects .card-grid {
                 grid-template-columns: repeat(3, 1fr);
-                align-items: start;
+                grid-auto-rows: 1fr;
                 gap: var(--space-5);
             }
             @media (max-width: 860px) {
@@ -54,12 +55,33 @@
             @media (max-width: 560px) {
                 .projects .card-grid {
                     grid-template-columns: 1fr;
+                    /* Single column: let each card size to its own content again —
+                       one tall fixed height per card would waste vertical space. */
+                    grid-auto-rows: auto;
                 }
             }
             .project {
                 display: flex;
                 flex-direction: column;
                 gap: var(--space-4);
+            }
+            /* Hero thumbnail: bleeds to the card edges by cancelling the card's
+               padding, with the top corners matching the card radius. A fixed
+               aspect-ratio + object-fit:cover normalises the mix of real photos
+               and branded SVGs into a uniform strip. */
+            .project .thumb {
+                margin: calc(-1 * var(--space-6)) calc(-1 * var(--space-6)) 0;
+                aspect-ratio: 16 / 10;
+                border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+                overflow: hidden;
+                background: var(--color-surface-2);
+                border-bottom: 1px solid var(--color-border);
+            }
+            .project .thumb img {
+                display: block;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
             }
             .project p {
                 margin: 0;
@@ -71,6 +93,9 @@
                 gap: var(--space-2);
             }
             .project .links {
+                /* margin-top:auto anchors the CTA row to the card bottom so every
+                   card's links align, regardless of description length. */
+                margin-top: auto;
                 padding-top: var(--space-2);
                 display: flex;
                 flex-wrap: wrap;
@@ -96,6 +121,7 @@
             <section class="projects">
                 <div class="card-grid">
                     <article class="card project">
+                        <div class="thumb"><img src="images/earth-in-voxels.jpg" alt="Screenshot of the Earth in Voxels viewer showing mountain terrain rendered as voxels" loading="lazy" decoding="async" /></div>
                         <div class="eyebrow">▸ Graphics</div>
                         <h3>Earth in Voxels</h3>
                         <p>
@@ -123,6 +149,7 @@
                     </article>
 
                     <article class="card project">
+                        <div class="thumb"><img src="images/vacuum.jpg" alt="Delta-2D lidar sensor board from a robot vacuum teardown" loading="lazy" decoding="async" /></div>
                         <div class="eyebrow">▸ Robotics</div>
                         <h3>Reverse-Engineering a Robot Vacuum</h3>
                         <p>
@@ -155,6 +182,7 @@
                     </article>
 
                     <article class="card project">
+                        <div class="thumb"><img src="images/avarta.jpg" alt="A 3D-rendered seashell from the Avarta seashell generator" loading="lazy" decoding="async" /></div>
                         <div class="eyebrow">▸ Simulation</div>
                         <h3>Sea Shell Simulator</h3>
                         <p>
@@ -182,6 +210,7 @@
                     </article>
 
                     <article class="card project">
+                        <div class="thumb"><img src="images/pulsecraft.jpg" alt="A 3D-rendered kitchen scene created in PulseCraft Studio" loading="lazy" decoding="async" /></div>
                         <div class="eyebrow">▸ App</div>
                         <h3>PulseCraft Studio</h3>
                         <p>
@@ -214,6 +243,7 @@
                     </article>
 
                     <article class="card project">
+                        <div class="thumb"><img src="images/datalogic.svg" alt="JSONLogic rule tree framed by curly braces" loading="lazy" decoding="async" /></div>
                         <div class="eyebrow">▸ Library</div>
                         <h3>datalogic-rs · JSONLogic</h3>
                         <p>
@@ -238,6 +268,7 @@
                     </article>
 
                     <article class="card project">
+                        <div class="thumb"><img src="images/tamil.svg" alt="Tamil metrical scansion marks — long bars and short dot pairs" loading="lazy" decoding="async" /></div>
                         <div class="eyebrow">▸ Language</div>
                         <h3>Tamil Grammar Analyzer</h3>
                         <p>
@@ -261,6 +292,92 @@
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 >GitHub ↗</a
+                            >
+                        </div>
+                    </article>
+
+                    <article class="card project">
+                        <div class="thumb"><img src="images/powertiger.jpg" alt="Pink PowerTiger PCB with rows of CT-sensor jacks" loading="lazy" decoding="async" /></div>
+                        <div class="eyebrow">▸ Hardware</div>
+                        <h3>PowerTiger</h3>
+                        <p>
+                            An open-source household energy monitor: a custom
+                            KiCad PCB feeds up to 16 clamp-on CT sensors into a
+                            Raspberry Pi Pico W running CircuitPython, streaming
+                            per-circuit power to a Grafana dashboard.
+                        </p>
+                        <div class="tags">
+                            <span class="tag">CircuitPython</span>
+                            <span class="tag">Pico W</span>
+                            <span class="tag">KiCad</span>
+                        </div>
+                        <div class="links">
+                            <a
+                                class="btn btn--primary"
+                                href="/blog/powertiger-monitoring-energy-consumption-with-better-granularity/"
+                                >Read the build →</a
+                            >
+                            <a
+                                class="link-gold"
+                                href="https://github.com/codetiger/PowerTiger"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                >GitHub ↗</a
+                            >
+                        </div>
+                    </article>
+
+                    <article class="card project">
+                        <div class="thumb"><img src="images/gametiger.jpg" alt="GameTiger RP2040 handheld console running the Snake game" loading="lazy" decoding="async" style="object-position: 50% 32%" /></div>
+                        <div class="eyebrow">▸ Hardware</div>
+                        <h3>GameTiger</h3>
+                        <p>
+                            A retro handheld game console built on the RP2040 —
+                            a custom PCB, a colour LCD, and a from-scratch C
+                            framebuffer and sprite engine running Snake, Tetris,
+                            2048, Minesweeper and more.
+                        </p>
+                        <div class="tags">
+                            <span class="tag">C</span>
+                            <span class="tag">RP2040</span>
+                            <span class="tag">Pico SDK</span>
+                        </div>
+                        <div class="links">
+                            <a
+                                class="btn btn--primary"
+                                href="/blog/my-first-attempt-on-pcb-designing-based-on-rp2040/"
+                                >Read the build →</a
+                            >
+                            <a
+                                class="link-gold"
+                                href="https://github.com/codetiger/GameTiger"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                >GitHub ↗</a
+                            >
+                        </div>
+                    </article>
+
+                    <article class="card project">
+                        <div class="thumb"><img src="images/ralisat-1.jpg" alt="Aerial photo of rivers and land captured by the RaLiSat-1 balloon from near space" loading="lazy" decoding="async" /></div>
+                        <div class="eyebrow">▸ Near Space</div>
+                        <h3>RaLiSat-1</h3>
+                        <p>
+                            A high-altitude balloon reaching toward the edge of
+                            space, carrying a Raspberry Pi payload with GPS and
+                            LoRa telemetry to photograph the curvature of the
+                            Earth on its ascent.
+                        </p>
+                        <div class="tags">
+                            <span class="tag">Raspberry Pi</span>
+                            <span class="tag">GPS</span>
+                            <span class="tag">LoRa</span>
+                        </div>
+                        <div class="links">
+                            <a
+                                class="btn btn--primary"
+                                href="/blog/dream-of-reaching-near-space-using-high-altitude-balloon/"
+                                >Read the story →</a
                             >
                         </div>
                     </article>
