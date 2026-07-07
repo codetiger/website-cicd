@@ -97,22 +97,29 @@ cp -R "$ROOT/projects/tamil/web/css" "$ROOT/projects/tamil/web/js" "$DIST/tamil/
 cp "$ROOT/projects/tamil/wasm/pkg/tamil_yaappu_wasm.js" \
    "$ROOT/projects/tamil/wasm/pkg/tamil_yaappu_wasm_bg.wasm" "$DIST/tamil/pkg/"
 
-echo "==> earth in voxels (Vite viewer; tiles from R2) -> /earth/"
-# The 3.2 GB tile pyramid is NOT bundled — the viewer streams it at runtime from VITE_TILE_BASE
-# (a public Cloudflare R2 url). The pyramid is gitignored upstream, so a clean/CI checkout has
-# none; a local dev checkout may, so we move it aside for the build to keep dist/earth small.
-# Tiles are served from a public Cloudflare R2 bucket (voxel-data) via a custom domain. The base
-# must end in a slash and hold manifest.json + tiles/. Override per-build via the
-# VISHWAKARMA_TILE_BASE env var (wired in deploy.yml); the default below is the live base.
+echo "==> earth in voxels (Vite viewer; tiles + labels from R2) -> /earth/"
+# Neither the height-tile pyramid (~3.2 GB) nor the place-name label pyramid (~0.4 GB) is
+# bundled — the viewer streams both at runtime from public Cloudflare R2 urls (VITE_TILE_BASE
+# / VITE_LABELS_BASE). Both are gitignored upstream, so a clean/CI checkout has neither; a
+# local dev checkout may, so we move them aside for the build (restored via a trap) to keep
+# dist/earth small. Each base must end in a slash — tiles hold manifest.json + tiles/; labels
+# hold manifest.json + base.bin + tileindex.bin + tiles/. Override per-build via the
+# VISHWAKARMA_*_BASE env vars (wired in deploy.yml); the defaults below are the live R2 bases.
+# VITE_LABELS_BASE MUST be set at build time: unset, the app looks for a bundled public/labels/
+# that a clean checkout never has, so /earth/ would 404 every label tile.
 : "${VISHWAKARMA_TILE_BASE:=https://voxel-data.codetiger.in/pyramid/}"
+: "${VISHWAKARMA_LABELS_BASE:=https://voxel-data.codetiger.in/labels/}"
 (
   cd "$ROOT/projects/vishwakarma/web"
-  if [ -d public/pyramid ]; then
-    mv public/pyramid ../pyramid.aside
-    trap 'mv "$ROOT/projects/vishwakarma/pyramid.aside" "$ROOT/projects/vishwakarma/web/public/pyramid"' EXIT
-  fi
+  # Move any large generated tile/label dirs a local checkout may have out of public/ so Vite
+  # doesn't copy them into dist/earth; restore every one on exit (glob-based so it is safe
+  # whether none, one, or all were present).
+  for d in pyramid pyramid_v2 labels; do
+    if [ -d "public/$d" ]; then mv "public/$d" "../$d.aside"; fi
+  done
+  trap 'for a in "$ROOT/projects/vishwakarma"/*.aside; do [ -e "$a" ] && mv "$a" "$ROOT/projects/vishwakarma/web/public/$(basename "${a%.aside}")"; done' EXIT
   npm ci
-  VITE_TILE_BASE="$VISHWAKARMA_TILE_BASE" npm run build
+  VITE_TILE_BASE="$VISHWAKARMA_TILE_BASE" VITE_LABELS_BASE="$VISHWAKARMA_LABELS_BASE" npm run build
 )
 mkdir -p "$DIST/earth"
 cp -R "$ROOT/projects/vishwakarma/web/dist/." "$DIST/earth/"

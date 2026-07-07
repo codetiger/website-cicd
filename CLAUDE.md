@@ -158,7 +158,13 @@ these secrets — or the CI checkout fails on that repo.
   `vars.VISHWAKARMA_TILE_BASE` GitHub Actions repo variable (passed in `deploy.yml`). Empty/unset
   falls back to the live default baked into `build.sh`: `https://voxel-data.codetiger.in/pyramid/`
   (a public R2 bucket on a custom domain). Keep total `dist/` under the Pages limits when adding
-  anything.
+  anything. **The place-name label pyramid works the exact same way** (`web/public/labels`,
+  ~0.4 GB, also gitignored/generated): streamed at runtime from `VITE_LABELS_BASE`, set via the
+  **`VISHWAKARMA_LABELS_BASE`** env var / `vars.VISHWAKARMA_LABELS_BASE` repo variable, defaulting
+  to `https://voxel-data.codetiger.in/labels/`. `build.sh` moves `public/{pyramid,pyramid_v2,labels}`
+  aside for the build. **`VITE_LABELS_BASE` must be set at build time** — unset, the app looks for a
+  bundled `public/labels/` a clean checkout never has, so every label tile 404s (terrain still renders,
+  labels just don't). The R2 bucket must send CORS for the deploy origin (it allows `codetiger.in`).
 - **blog `site` config**: `projects/blog`'s `astro.config.mjs` has `site:
   'https://codetiger.github.io'`, which only affects sitemap/RSS/canonical URLs. The production
   domain change must happen in the blog repo, then the submodule pointer bumped here.

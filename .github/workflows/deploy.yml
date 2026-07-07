@@ -54,6 +54,9 @@ jobs:
           # Public Cloudflare R2 base for Earth-in-Voxels height tiles (manifest.json + tiles/).
           # Set as a repo VARIABLE (not a secret) — empty/unset falls back to build.sh's placeholder.
           VISHWAKARMA_TILE_BASE: ${{ vars.VISHWAKARMA_TILE_BASE }}
+          # Same, for the place-name label pyramid (manifest.json + base.bin + tileindex.bin + tiles/).
+          # Also a repo VARIABLE — empty/unset falls back to build.sh's live-R2 default.
+          VISHWAKARMA_LABELS_BASE: ${{ vars.VISHWAKARMA_LABELS_BASE }}
         run: ./scripts/build.sh
 
       # Bootstrap: create the Direct Upload Pages project on first deploy, then
